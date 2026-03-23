@@ -4,6 +4,7 @@ node_modules/
 # Build output
 dist/
 *.local
+/local
 
 # Editor
 .vscode/*
@@ -28,3 +29,8 @@ pnpm-debug.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
