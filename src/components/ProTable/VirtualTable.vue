@@ -39,12 +39,41 @@
                 class="virtual-table-cell"
               >
                 <div class="cell-content">
+                  <!-- 编辑态 -->
+                  <template v-if="editableContext && isCellEditing(row, column)">
+                    <EditCell
+                      :column="column"
+                      :value="getCellValue(row, column)"
+                      :row-id="getRowKey(row)"
+                      mode="cell"
+                    />
+                  </template>
+                  <!-- cell 模式可点击编辑 -->
+                  <template v-else-if="editableContext && editableContext.editMode === 'cell' && column.editable">
+                    <div class="cell-editable" @click.stop="handleCellClick(row, column)">
+                      <slot
+                        v-if="$slots[column.dataIndex]"
+                        :name="column.dataIndex"
+                        :row="row"
+                        :value="row[column.dataIndex]"
+                      />
+                      <ColumnRenderer
+                        v-else
+                        :column="column"
+                        :value="row[column.dataIndex]"
+                        :record="row"
+                        :index="visibleRows.indexOf(row)"
+                      />
+                    </div>
+                  </template>
+                  <!-- 具名插槽 -->
                   <slot
-                    v-if="$slots[column.dataIndex]"
+                    v-else-if="$slots[column.dataIndex]"
                     :name="column.dataIndex"
                     :row="row"
                     :value="row[column.dataIndex]"
                   />
+                  <!-- 默认渲染 -->
                   <template v-else>
                     <ColumnRenderer
                       :column="column"
@@ -70,10 +99,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
 import ColumnRenderer from './ColumnRenderer.vue'
-import type { ColumnProps } from './types'
+import EditCell from './EditCell.vue'
+import type { ColumnProps, EditableContext } from './types'
 
 interface Props {
   columns: ColumnProps[]
@@ -95,12 +125,15 @@ const emit = defineEmits<{
   (e: 'row-click', row: any, event: Event): void
 }>()
 
+// 注入编辑上下文
+const editableContext = inject<EditableContext>('editableContext', null as any)
+
 // 容器引用
 const tableContainer = ref<HTMLDivElement>()
 
 // 状态
 const scrollTop = ref(0)
-const containerHeight = ref(600) // 默认高度
+const containerHeight = ref(600)
 const rowHeight = props.estimatedRowHeight
 const buffer = props.buffer
 
@@ -139,6 +172,25 @@ function getRowKey(row: any): string {
   return row[props.rowKey] || String(row)
 }
 
+// 判断单元格是否编辑态
+function isCellEditing(row: any, column: ColumnProps): boolean {
+  if (!editableContext || !column.editable) return false
+  return editableContext.isEditing(getRowKey(row), column.dataIndex)
+}
+
+// 获取单元格当前值
+function getCellValue(row: any, column: ColumnProps): any {
+  if (!editableContext) return row[column.dataIndex]
+  const editValue = editableContext.getEditingValue(getRowKey(row), column.dataIndex)
+  return editValue !== undefined ? editValue : row[column.dataIndex]
+}
+
+// cell 模式点击
+function handleCellClick(row: any, column: ColumnProps) {
+  if (!editableContext) return
+  editableContext.startCellEdit(getRowKey(row), column.dataIndex, row)
+}
+
 // 处理滚动
 function handleScroll(event: Event) {
   const target = event.target as HTMLDivElement
@@ -149,7 +201,7 @@ function handleScroll(event: Event) {
 function updateContainerHeight() {
   if (tableContainer.value?.parentElement) {
     const parentHeight = tableContainer.value.parentElement.clientHeight
-    containerHeight.value = Math.max(300, parentHeight - 100) // 减去一些边距
+    containerHeight.value = Math.max(300, parentHeight - 100)
   }
 }
 
@@ -246,6 +298,17 @@ watch(
 
 .loading-icon {
   animation: rotate 1s linear infinite;
+}
+
+.cell-editable {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.cell-editable:hover {
+  background-color: var(--el-fill-color-light);
 }
 
 @keyframes rotate {

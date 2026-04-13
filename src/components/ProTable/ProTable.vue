@@ -45,7 +45,40 @@
         @filter-change="handleFilterChange"
       >
         <template v-for="column in processedColumns" :key="column.dataIndex">
+          <!-- 行编辑模式下的操作列 -->
           <el-table-column
+            v-if="isEditModeColumn(column)"
+            :prop="column.dataIndex"
+            :label="column.title"
+            :width="column.width"
+            :fixed="column.fixed"
+          >
+            <template #default="scope">
+              <template v-if="editingRowKeys.has(getRowKeyValue(scope.row))">
+                <el-space>
+                  <el-button size="small" type="primary" @click="handleRowSave(scope.row)">保存</el-button>
+                  <el-button size="small" @click="handleRowCancel(scope.row)">取消</el-button>
+                </el-space>
+              </template>
+              <template v-else>
+                <slot
+                  v-if="$slots[column.dataIndex]"
+                  :name="column.dataIndex"
+                  :row="scope.row"
+                  :index="scope.$index"
+                  :value="scope.row[column.dataIndex]"
+                />
+                <el-space v-else>
+                  <el-button size="small" type="primary" @click="handleRowEdit(scope.row)">编辑</el-button>
+                  <slot name="action-extra" :row="scope.row" :index="scope.$index" />
+                </el-space>
+              </template>
+            </template>
+          </el-table-column>
+
+          <!-- 普通列 / 编辑列 -->
+          <el-table-column
+            v-else
             :prop="column.dataIndex"
             :label="column.title"
             :width="column.width"
@@ -59,13 +92,47 @@
           >
             <!-- 自定义列渲染 -->
             <template #default="scope">
+              <!-- 编辑态 -->
+              <template v-if="isCellEditing(scope.row, column)">
+                <EditCell
+                  :column="column"
+                  :value="getCellValue(scope.row, column)"
+                  :row-id="getRowKeyValue(scope.row)"
+                  :mode="editMode === 'row' ? 'row' : 'cell'"
+                />
+              </template>
+              <!-- cell 模式：可点击进入编辑 -->
+              <template v-else-if="editMode === 'cell' && column.editable">
+                <div
+                  class="cell-editable"
+                  @click="handleCellClick(scope.row, column)"
+                >
+                  <slot
+                    v-if="$slots[column.dataIndex]"
+                    :name="column.dataIndex"
+                    :row="scope.row"
+                    :index="scope.$index"
+                    :value="scope.row[column.dataIndex]"
+                  />
+                  <ColumnRenderer
+                    v-else
+                    :column="column"
+                    :value="scope.row[column.dataIndex]"
+                    :record="scope.row"
+                    :index="scope.$index"
+                  />
+                  <el-icon class="cell-edit-icon"><Edit /></el-icon>
+                </div>
+              </template>
+              <!-- 具名插槽 -->
               <slot
-                v-if="$slots[column.dataIndex]"
+                v-else-if="$slots[column.dataIndex]"
                 :name="column.dataIndex"
                 :row="scope.row"
                 :index="scope.$index"
                 :value="scope.row[column.dataIndex]"
               />
+              <!-- 默认渲染 -->
               <template v-else>
                 <ColumnRenderer
                   :column="column"
@@ -96,16 +163,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, provide } from 'vue'
+import { ref, computed, watch, onMounted, provide, toRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Edit } from '@element-plus/icons-vue'
 import ProTableToolbar from './Toolbar.vue'
 import ProVirtualTable from './VirtualTable.vue'
 import ColumnRenderer from './ColumnRenderer.vue'
+import EditCell from './EditCell.vue'
 import { exportToExcel } from './utils/export'
 import { useTableState } from './hooks/useTableState'
 import { useColumnState } from './hooks/useColumnState'
 import { useUrlSync } from './hooks/useUrlSync'
+import { useEditable } from './hooks/useEditable'
 import type { ColumnProps, ProTableProps, TableState, TableData } from './types'
 
 const props = withDefaults(defineProps<ProTableProps>(), {
@@ -121,6 +191,7 @@ const emit = defineEmits<{
   (e: 'change', state: TableState): void
   (e: 'row-click', row: any, event: Event): void
   (e: 'update:params', params: any): void
+  (e: 'save', params: any): void
 }>()
 
 // 状态管理
@@ -130,7 +201,6 @@ const { columnState, processedColumns, updateColumnState } = useColumnState(prop
 // URL 同步
 if (props.syncUrl) {
   const { initFromUrl } = useUrlSync(tableState, () => fetchData())
-  // 初始化时从URL读取状态
   initFromUrl()
 }
 
@@ -138,6 +208,93 @@ if (props.syncUrl) {
 const dataSource = ref<any[]>([])
 const loading = ref(false)
 const total = ref(0)
+
+// ---- 编辑功能 ----
+const editModeRef = toRef(props, 'editMode')
+
+// 获取行 key 值
+function getRowKeyValue(row: any): string | number {
+  if (typeof props.rowKey === 'function') {
+    return props.rowKey(row)
+  }
+  return row[props.rowKey]
+}
+
+// 根据 rowKey 查找记录
+function getRecordByKey(rowId: string | number): any | undefined {
+  return dataSource.value.find(row => {
+    const key = getRowKeyValue(row)
+    return String(key) === String(rowId)
+  })
+}
+
+const {
+  editingRowKeys,
+  isEditing,
+  getEditingValue,
+  updateEditingValue,
+  startCellEdit,
+  saveCellEdit,
+  cancelCellEdit,
+  startRowEdit,
+  saveRowEdit,
+  cancelRowEdit,
+  editableContext
+} = useEditable({
+  editMode: editModeRef,
+  onSave: props.onSave,
+  getRecordByKey,
+  dataSource,
+  rowKey: props.rowKey
+})
+
+// provide 编辑上下文给子组件
+provide('editableContext', editableContext)
+
+// 判断单元格是否处于编辑态
+function isCellEditing(row: any, column: ColumnProps): boolean {
+  if (!props.editMode || !column.editable) return false
+  const rowId = getRowKeyValue(row)
+  return isEditing(rowId, column.dataIndex)
+}
+
+// 获取单元格当前值（编辑中取编辑值，否则取原始值）
+function getCellValue(row: any, column: ColumnProps): any {
+  const rowId = getRowKeyValue(row)
+  const editValue = getEditingValue(rowId, column.dataIndex)
+  return editValue !== undefined ? editValue : row[column.dataIndex]
+}
+
+// 判断是否是编辑模式下的操作列
+function isEditModeColumn(column: ColumnProps): boolean {
+  return props.editMode === 'row' && column.dataIndex === 'action'
+}
+
+// 行编辑：点击编辑
+function handleRowEdit(row: any) {
+  const rowId = getRowKeyValue(row)
+  startRowEdit(rowId, row)
+}
+
+// 行编辑：保存
+async function handleRowSave(row: any) {
+  const rowId = getRowKeyValue(row)
+  await saveRowEdit(rowId)
+  emit('save', { rowId, record: row })
+}
+
+// 行编辑：取消
+function handleRowCancel(row: any) {
+  const rowId = getRowKeyValue(row)
+  cancelRowEdit(rowId)
+}
+
+// cell 模式下，点击单元格进入编辑
+function handleCellClick(row: any, column: ColumnProps) {
+  if (props.editMode !== 'cell' || !column.editable) return
+  const rowId = getRowKeyValue(row)
+  startCellEdit(rowId, column.dataIndex, row)
+}
 
 // 分页配置
 const pagination = computed(() => {
@@ -207,7 +364,7 @@ function handleSortChange({ prop, order }: { prop: string; order: 'ascending' | 
         field: prop,
         order: order === 'ascending' ? 'ascend' : 'descend'
       },
-      current: 1 // 排序后回到第一页
+      current: 1
     })
   } else {
     setTableState({ sorter: null })
@@ -223,7 +380,6 @@ function handleFilterChange(filters: Record<string, any[]>) {
     }
   })
 
-  // 筛选变化时重置到第一页
   setTableState({
     filters: activeFilters,
     current: 1
@@ -262,7 +418,13 @@ defineExpose({
   fetchData,
   getTableData: () => dataSource.value,
   getTableState: () => tableState,
-  resetTableState
+  resetTableState,
+  startCellEdit,
+  saveCellEdit,
+  cancelCellEdit,
+  startRowEdit,
+  saveRowEdit,
+  cancelRowEdit
 })
 
 // 初始加载
@@ -279,5 +441,30 @@ onMounted(() => {
 .pro-table-pagination {
   margin-top: 16px;
   text-align: right;
+}
+
+.cell-editable {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.cell-editable:hover {
+  background-color: var(--el-fill-color-light);
+}
+
+.cell-edit-icon {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.cell-editable:hover .cell-edit-icon {
+  opacity: 1;
 }
 </style>

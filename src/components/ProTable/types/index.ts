@@ -63,6 +63,30 @@ export interface EditConfig {
   options?: Array<{ label: string; value: any }>
   props?: Record<string, any>
   rules?: any[]
+  placeholder?: string
+}
+
+// 编辑保存参数
+export interface EditSaveParams {
+  record: any
+  rowId: string | number
+  dataIndex?: string           // cell 模式：当前编辑的字段名
+  value?: any                  // cell 模式：当前编辑的新值
+  values?: Record<string, any> // row 模式：整行所有修改字段
+}
+
+// 编辑上下文 (provide/inject)
+export interface EditableContext {
+  editMode?: 'cell' | 'row' | 'batch'
+  isEditing: (rowId: string | number, dataIndex?: string) => boolean
+  getEditingValue: (rowId: string | number, dataIndex: string) => any
+  updateEditingValue: (rowId: string | number, dataIndex: string, value: any) => void
+  startCellEdit: (rowId: string | number, dataIndex: string, record: any) => void
+  saveCellEdit: () => Promise<void>
+  cancelCellEdit: () => void
+  startRowEdit: (rowId: string | number, record: any) => void
+  saveRowEdit: (rowId: string | number) => Promise<void>
+  cancelRowEdit: (rowId: string | number) => void
 }
 
 // 表格状态
@@ -136,6 +160,9 @@ export interface ProTableProps {
 
   // 编辑模式
   editMode?: 'cell' | 'row' | 'batch'
+
+  // 编辑保存回调 (返回 true 表示成功更新本地数据，false 表示失败回滚)
+  onSave?: (params: EditSaveParams) => Promise<boolean>
 
   // 其他原生 el-table 属性
   [key: string]: any

@@ -7,6 +7,7 @@ import App from './App.vue'
 import BasicUsage from '../examples/BasicUsage.vue'
 import UrlSyncDemo from '../examples/UrlSyncDemo.vue'
 import LargeDataDemo from '../examples/LargeDataDemo.vue'
+import EditDemo from '../examples/EditDemo.vue'
 
 // 创建路由
 const router = createRouter({
@@ -15,7 +16,8 @@ const router = createRouter({
     { path: '/', redirect: '/basic' },
     { path: '/basic', component: BasicUsage },
     { path: '/url-sync', component: UrlSyncDemo },
-    { path: '/large-data', component: LargeDataDemo }
+    { path: '/large-data', component: LargeDataDemo },
+    { path: '/edit', component: EditDemo }
   ]
 })
 

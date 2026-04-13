@@ -6,6 +6,7 @@ import ProTableToolbar from './Toolbar.vue'
 import ProVirtualTable from './VirtualTable.vue'
 import ColumnSetting from './ColumnSetting.vue'
 import ColumnRenderer from './ColumnRenderer.vue'
+import EditCell from './EditCell.vue'
 
 // 工具函数
 export { exportToExcel, exportToCsv } from './utils/export'
@@ -14,6 +15,7 @@ export { exportToExcel, exportToCsv } from './utils/export'
 export { useTableState } from './hooks/useTableState'
 export { useColumnState } from './hooks/useColumnState'
 export { useUrlSync } from './hooks/useUrlSync'
+export { useEditable } from './hooks/useEditable'
 
 // 类型定义
 export type {
@@ -23,7 +25,10 @@ export type {
   ColumnState,
   RequestParams,
   TableData,
-  ExportOptions
+  ExportOptions,
+  EditConfig,
+  EditSaveParams,
+  EditableContext
 } from './types'
 
 // 默认导出
@@ -35,5 +40,6 @@ export {
   ProTableToolbar,
   ProVirtualTable,
   ColumnSetting,
-  ColumnRenderer
+  ColumnRenderer,
+  EditCell
 }
