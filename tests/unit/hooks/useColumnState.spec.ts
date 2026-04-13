@@ -18,11 +18,17 @@ describe('useColumnState - 配置化表格列状态管理', () => {
       name: true,
       age: true,
       email: true,
-      status: true
+      status: true,
     })
 
     // 处理后的列应该与原始列顺序一致
-    expect(processedColumns.value.map(col => col?.dataIndex)).toEqual(['id', 'name', 'age', 'email', 'status'])
+    expect(processedColumns.value.map((col) => col?.dataIndex)).toEqual([
+      'id',
+      'name',
+      'age',
+      'email',
+      'status',
+    ])
     expect(processedColumns.value).toHaveLength(5)
   })
 
@@ -31,7 +37,7 @@ describe('useColumnState - 配置化表格列状态管理', () => {
     const columns: ColumnProps[] = [
       { dataIndex: 'id', title: 'ID', hideInTable: false },
       { dataIndex: 'name', title: '姓名', hideInTable: true },
-      { dataIndex: 'age', title: '年龄', hideInTable: false }
+      { dataIndex: 'age', title: '年龄', hideInTable: false },
     ]
 
     // 执行
@@ -41,11 +47,11 @@ describe('useColumnState - 配置化表格列状态管理', () => {
     expect(columnState.value.visible).toEqual({
       id: true,
       name: false,
-      age: true
+      age: true,
     })
 
     // 隐藏的列不应该出现在处理后的列中
-    expect(processedColumns.value.map(col => col?.dataIndex)).toEqual(['id', 'age'])
+    expect(processedColumns.value.map((col) => col?.dataIndex)).toEqual(['id', 'age'])
   })
 
   test('应该支持更新列显隐状态', () => {
@@ -75,7 +81,13 @@ describe('useColumnState - 配置化表格列状态管理', () => {
     expect(columnState.value.order).toEqual(['name', 'age', 'id', 'email', 'status'])
 
     // 验证处理后的列也按新顺序排列
-    expect(processedColumns.value.map(col => col?.dataIndex)).toEqual(['name', 'age', 'id', 'email', 'status'])
+    expect(processedColumns.value.map((col) => col?.dataIndex)).toEqual([
+      'name',
+      'age',
+      'id',
+      'email',
+      'status',
+    ])
   })
 
   test('应该支持批量更新列状态', () => {
@@ -86,7 +98,7 @@ describe('useColumnState - 配置化表格列状态管理', () => {
     // 执行：更新列顺序和显隐状态
     updateColumnState({
       order: ['status', 'email', 'age', 'name', 'id'],
-      visible: { id: false, name: false }
+      visible: { id: false, name: false },
     })
 
     // 验证
@@ -104,7 +116,7 @@ describe('useColumnState - 配置化表格列状态管理', () => {
     // 执行：先修改状态，然后重置
     updateColumnState({
       order: ['status', 'id', 'name'],
-      visible: { id: false, age: false }
+      visible: { id: false, age: false },
     })
 
     // 验证修改生效
@@ -131,18 +143,18 @@ describe('useColumnState - 配置化表格列状态管理', () => {
     expect(processedColumns.value).toHaveLength(7)
 
     // 验证列配置被正确传递
-    const idColumn = processedColumns.value.find(col => col?.dataIndex === 'id')
+    const idColumn = processedColumns.value.find((col) => col?.dataIndex === 'id')
     expect(idColumn).toBeDefined()
     expect(idColumn?.title).toBe('ID')
     expect(idColumn?.sorter).toBe(true)
     expect(idColumn?.fixed).toBe('left')
 
-    const statusColumn = processedColumns.value.find(col => col?.dataIndex === 'status')
+    const statusColumn = processedColumns.value.find((col) => col?.dataIndex === 'status')
     expect(statusColumn).toBeDefined()
     expect(statusColumn?.valueType).toBe('enum')
     expect(statusColumn?.valueEnum).toEqual({
       active: { text: '活跃', status: 'success' },
-      inactive: { text: '禁用', status: 'info' }
+      inactive: { text: '禁用', status: 'info' },
     })
   })
 
@@ -152,14 +164,14 @@ describe('useColumnState - 配置化表格列状态管理', () => {
       { dataIndex: 'id', title: 'ID', hideInTable: false },
       { dataIndex: 'secret', title: '秘密列', hideInTable: true },
       { dataIndex: 'name', title: '姓名', hideInTable: false },
-      { dataIndex: 'internal', title: '内部列', hideInTable: true }
+      { dataIndex: 'internal', title: '内部列', hideInTable: true },
     ]
 
     // 执行
     const { processedColumns } = useColumnState(columns)
 
     // 验证：只有非隐藏列出现在处理后的列中
-    expect(processedColumns.value.map(col => col?.dataIndex)).toEqual(['id', 'name'])
+    expect(processedColumns.value.map((col) => col?.dataIndex)).toEqual(['id', 'name'])
     expect(processedColumns.value).toHaveLength(2)
   })
 })

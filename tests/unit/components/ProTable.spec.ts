@@ -13,15 +13,15 @@ vi.mock('element-plus', async () => {
     ElMessage: {
       error: vi.fn(),
       success: vi.fn(),
-      warning: vi.fn()
-    }
+      warning: vi.fn(),
+    },
   }
 })
 
 // 模拟 vue-router
 vi.mock('vue-router', () => ({
   useRoute: () => ({ query: {} }),
-  useRouter: () => ({ replace: vi.fn() })
+  useRouter: () => ({ replace: vi.fn() }),
 }))
 
 describe('ProTable - 配置化表格组件', () => {
@@ -36,7 +36,7 @@ describe('ProTable - 配置化表格组件', () => {
       return Promise.resolve({
         data: mockTableData.slice(0, params.pageSize),
         total: mockTableData.length,
-        success: true
+        success: true,
       })
     })
   })
@@ -48,19 +48,19 @@ describe('ProTable - 配置化表格组件', () => {
         columns: basicColumns,
         request: mockRequest,
         showToolbar: false,
-        pagination: false
+        pagination: false,
       },
       global: {
         components: {
           ElTable,
           ElTableColumn,
-          ElPagination
-        }
-      }
+          ElPagination,
+        },
+      },
     })
 
     // 等待初始数据加载
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // 验证列被正确渲染
     const table = wrapper.findComponent(ElTable)
@@ -88,24 +88,24 @@ describe('ProTable - 配置化表格组件', () => {
         columns: basicColumns,
         request: mockRequest,
         showToolbar: false,
-        pagination: false
+        pagination: false,
       },
       global: {
         components: {
           ElTable,
-          ElTableColumn
-        }
-      }
+          ElTableColumn,
+        },
+      },
     })
 
     // 等待初始加载
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // 验证请求函数被调用
     expect(mockRequest).toHaveBeenCalledTimes(1)
     expect(mockRequest).toHaveBeenCalledWith({
       current: 1,
-      pageSize: 20
+      pageSize: 20,
     })
 
     // 验证表格数据被渲染
@@ -123,20 +123,20 @@ describe('ProTable - 配置化表格组件', () => {
         pagination: {
           enabled: true,
           pageSizes: [10, 20, 30],
-          layout: 'total, sizes, prev, pager, next'
-        }
+          layout: 'total, sizes, prev, pager, next',
+        },
       },
       global: {
         components: {
           ElTable,
           ElTableColumn,
-          ElPagination
-        }
-      }
+          ElPagination,
+        },
+      },
     })
 
     // 等待初始加载
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // 验证分页组件存在
     const pagination = wrapper.findComponent(ElPagination)
@@ -155,17 +155,17 @@ describe('ProTable - 配置化表格组件', () => {
         columns: basicColumns,
         request: mockRequest,
         showToolbar: true,
-        pagination: false
+        pagination: false,
       },
       global: {
         components: {
           ElTable,
-          ElTableColumn
-        }
-      }
+          ElTableColumn,
+        },
+      },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
     expect(wrapperWithToolbar.find('.pro-table-toolbar').exists()).toBe(true)
 
     // 测试2：隐藏工具栏
@@ -174,17 +174,17 @@ describe('ProTable - 配置化表格组件', () => {
         columns: basicColumns,
         request: mockRequest,
         showToolbar: false,
-        pagination: false
+        pagination: false,
       },
       global: {
         components: {
           ElTable,
-          ElTableColumn
-        }
-      }
+          ElTableColumn,
+        },
+      },
     })
 
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
     expect(wrapperWithoutToolbar.find('.pro-table-toolbar').exists()).toBe(false)
   })
 
@@ -193,7 +193,7 @@ describe('ProTable - 配置化表格组件', () => {
     const columnsWithSlot: ColumnProps[] = [
       { dataIndex: 'id', title: 'ID' },
       { dataIndex: 'name', title: '姓名' },
-      { dataIndex: 'custom', title: '自定义列' }
+      { dataIndex: 'custom', title: '自定义列' },
     ]
 
     const wrapper = mount(ProTable, {
@@ -201,22 +201,23 @@ describe('ProTable - 配置化表格组件', () => {
         columns: columnsWithSlot,
         request: mockRequest,
         showToolbar: false,
-        pagination: false
+        pagination: false,
       },
       slots: {
         // 为 custom 列提供自定义渲染
-        custom: '<template #default="{ row }"><span class="custom-cell">自定义: {{ row.name }}</span></template>'
+        custom:
+          '<template #default="{ row }"><span class="custom-cell">自定义: {{ row.name }}</span></template>',
       },
       global: {
         components: {
           ElTable,
-          ElTableColumn
-        }
-      }
+          ElTableColumn,
+        },
+      },
     })
 
     // 等待加载
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // 验证自定义插槽内容被渲染
     const customCells = wrapper.findAll('.custom-cell')
@@ -228,23 +229,23 @@ describe('ProTable - 配置化表格组件', () => {
     // 准备：模拟请求失败
     const errorRequest = vi.fn().mockRejectedValue(new Error('网络错误'))
 
-    const wrapper = mount(ProTable, {
+    mount(ProTable, {
       props: {
         columns: basicColumns,
         request: errorRequest,
         showToolbar: false,
-        pagination: false
+        pagination: false,
       },
       global: {
         components: {
           ElTable,
-          ElTableColumn
-        }
-      }
+          ElTableColumn,
+        },
+      },
     })
 
     // 等待请求完成
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     // 验证错误消息被显示
     expect(ElMessage.error).toHaveBeenCalledWith('加载数据失败')
@@ -257,20 +258,21 @@ describe('ProTable - 配置化表格组件', () => {
         columns: basicColumns,
         request: mockRequest,
         showToolbar: false,
-        pagination: false
+        pagination: false,
       },
       global: {
         components: {
           ElTable,
-          ElTableColumn
-        }
-      }
+          ElTableColumn,
+        },
+      },
     })
 
     // 等待加载
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // 获取组件实例
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 组件实例无法通过类型获取 exposed 方法
     const vm = wrapper.vm as any
 
     // 验证暴露的方法存在
@@ -283,7 +285,7 @@ describe('ProTable - 配置化表格组件', () => {
     // 测试刷新方法
     const initialCallCount = mockRequest.mock.calls.length
     vm.refresh()
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
     expect(mockRequest).toHaveBeenCalledTimes(initialCallCount + 1)
 
     // 测试获取表格数据
@@ -303,19 +305,19 @@ describe('ProTable - 配置化表格组件', () => {
         columns: basicColumns,
         request: mockRequest,
         showToolbar: false,
-        pagination: true
+        pagination: true,
       },
       global: {
         components: {
           ElTable,
           ElTableColumn,
-          ElPagination
-        }
-      }
+          ElPagination,
+        },
+      },
     })
 
     // 等待初始加载
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // 模拟分页变化
     const pagination = wrapper.findComponent(ElPagination)
@@ -324,7 +326,7 @@ describe('ProTable - 配置化表格组件', () => {
     // 验证请求被调用且参数正确
     expect(mockRequest).toHaveBeenCalledWith({
       current: 2,
-      pageSize: 20
+      pageSize: 20,
     })
   })
 
@@ -338,27 +340,27 @@ describe('ProTable - 配置化表格组件', () => {
         pagination: false,
         virtualScroll: {
           enabled: true,
-          estimatedRowHeight: 60
-        }
+          estimatedRowHeight: 60,
+        },
       },
       global: {
         components: {
           ElTable,
-          ElTableColumn
+          ElTableColumn,
         },
         stubs: {
-          ProVirtualTable: true // 存根虚拟表格组件
-        }
-      }
+          ProVirtualTable: true, // 存根虚拟表格组件
+        },
+      },
     })
 
     // 等待加载
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // 验证虚拟滚动配置被传递
     expect(wrapper.props('virtualScroll')).toEqual({
       enabled: true,
-      estimatedRowHeight: 60
+      estimatedRowHeight: 60,
     })
   })
 })

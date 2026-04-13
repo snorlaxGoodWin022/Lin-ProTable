@@ -39,12 +39,7 @@ app.component('ProTable', ProTable)
 
 ```vue
 <template>
-  <ProTable
-    :columns="columns"
-    :request="fetchData"
-    row-key="id"
-    show-toolbar
-  />
+  <ProTable :columns="columns" :request="fetchData" row-key="id" show-toolbar />
 </template>
 
 <script setup>
@@ -56,14 +51,14 @@ const columns = [
     title: '姓名',
     width: 150,
     sorter: true,
-    ellipsis: true
+    ellipsis: true,
   },
   {
     dataIndex: 'age',
     title: '年龄',
     width: 100,
     valueType: 'digit',
-    sorter: true
+    sorter: true,
   },
   {
     dataIndex: 'status',
@@ -71,9 +66,9 @@ const columns = [
     valueType: 'enum',
     valueEnum: {
       active: { text: '活跃', status: 'success' },
-      inactive: { text: '禁用', status: 'info' }
-    }
-  }
+      inactive: { text: '禁用', status: 'info' },
+    },
+  },
 ]
 
 async function fetchData(params) {
@@ -81,7 +76,7 @@ async function fetchData(params) {
   return {
     data: response.data.list,
     total: response.data.total,
-    success: true
+    success: true,
   }
 }
 </script>
@@ -93,17 +88,17 @@ async function fetchData(params) {
 
 ```typescript
 interface ColumnProps {
-  dataIndex: string          // 字段名
-  title: string             // 列标题
-  width?: number            // 列宽
-  fixed?: 'left' | 'right'  // 固定列
-  sorter?: boolean          // 是否可排序
-  filters?: FilterItem[]    // 筛选选项
-  valueType?: 'date' | 'money' | 'percent' | 'enum' | 'digit'  // 值类型
+  dataIndex: string // 字段名
+  title: string // 列标题
+  width?: number // 列宽
+  fixed?: 'left' | 'right' // 固定列
+  sorter?: boolean // 是否可排序
+  filters?: FilterItem[] // 筛选选项
+  valueType?: 'date' | 'money' | 'percent' | 'enum' | 'digit' // 值类型
   valueEnum?: Record<string, { text: string; status?: string }> // 枚举映射
-  editable?: boolean        // 是否可编辑
-  ellipsis?: boolean        // 超长省略
-  copyable?: boolean        // 可复制
+  editable?: boolean // 是否可编辑
+  ellipsis?: boolean // 超长省略
+  copyable?: boolean // 可复制
   customRender?: (params: { text: any; record: any; index: number }) => any
 }
 ```
@@ -115,7 +110,7 @@ interface ColumnProps {
   :virtual-scroll="{
     enabled: true,
     estimatedRowHeight: 55,
-    buffer: 5
+    buffer: 5,
   }"
   :request="fetchLargeData"
   :pagination="false"
@@ -125,14 +120,11 @@ interface ColumnProps {
 ### URL 状态同步
 
 ```vue
-<ProTable
-  :sync-url="true"
-  :columns="columns"
-  :request="fetchData"
-/>
+<ProTable :sync-url="true" :columns="columns" :request="fetchData" />
 ```
 
 URL 格式示例：
+
 ```
 /users?current=2&pageSize=20&sorter=age:desc&filters=eyJzdGF0dXMiOlsiYWN0aXZlIl19
 ```
@@ -180,23 +172,23 @@ src/components/ProTable/
 
 ### ProTable Props
 
-| 参数 | 说明 | 类型 | 默认值 |
-|------|------|------|--------|
-| columns | 列配置数组 | ColumnProps[] | required |
-| request | 数据请求函数 | (params) => Promise<TableData> | required |
-| rowKey | 行唯一标识 | string \| (record) => string | 'id' |
-| showToolbar | 是否显示工具栏 | boolean | true |
-| pagination | 分页配置 | boolean \| object | true |
-| virtualScroll | 虚拟滚动配置 | boolean \| object | false |
-| syncUrl | 是否同步 URL 状态 | boolean | true |
-| editMode | 编辑模式 | 'cell' \| 'row' \| 'batch' | undefined |
+| 参数          | 说明              | 类型                           | 默认值    |
+| ------------- | ----------------- | ------------------------------ | --------- |
+| columns       | 列配置数组        | ColumnProps[]                  | required  |
+| request       | 数据请求函数      | (params) => Promise<TableData> | required  |
+| rowKey        | 行唯一标识        | string \| (record) => string   | 'id'      |
+| showToolbar   | 是否显示工具栏    | boolean                        | true      |
+| pagination    | 分页配置          | boolean \| object              | true      |
+| virtualScroll | 虚拟滚动配置      | boolean \| object              | false     |
+| syncUrl       | 是否同步 URL 状态 | boolean                        | true      |
+| editMode      | 编辑模式          | 'cell' \| 'row' \| 'batch'     | undefined |
 
 ### 事件
 
-| 事件名 | 说明 | 参数 |
-|--------|------|------|
-| change | 表格状态变化时触发 | TableState |
-| row-click | 点击行时触发 | row, event |
+| 事件名    | 说明               | 参数       |
+| --------- | ------------------ | ---------- |
+| change    | 表格状态变化时触发 | TableState |
+| row-click | 点击行时触发       | row, event |
 
 ### 方法（通过 ref 调用）
 

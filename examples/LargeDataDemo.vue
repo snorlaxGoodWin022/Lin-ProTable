@@ -62,12 +62,7 @@
     </div>
 
     <div class="performance-info">
-      <el-alert
-        title="性能提示"
-        type="info"
-        :closable="false"
-        show-icon
-      >
+      <el-alert title="性能提示" type="info" :closable="false" show-icon>
         <template #default>
           <div>
             <p>• 虚拟滚动：只渲染可见区域的行，大幅提升大数据量下的性能（≥5000条自动启用）</p>
@@ -119,12 +114,12 @@ const dataSize = ref(10000)
 const paginationConfig = computed(() => ({
   enabled: true,
   pageSizes: [20, 50, 100, 200],
-  layout: 'total, sizes, prev, pager, next, jumper'
+  layout: 'total, sizes, prev, pager, next, jumper',
 }))
 
 const virtualScrollConfig = computed(() => ({
   enabled: dataSize.value >= 5000,
-  estimatedRowHeight: 50
+  estimatedRowHeight: 50,
 }))
 
 const columns: ColumnProps[] = [
@@ -137,22 +132,22 @@ const columns: ColumnProps[] = [
   { dataIndex: 'phone', title: '电话', width: 150 },
   { dataIndex: 'status', title: '状态', width: 100, filters: getStatusFilters() },
   { dataIndex: 'score', title: '评分', width: 150, sorter: true },
-  { dataIndex: 'joinDate', title: '入职日期', width: 120, valueType: 'date', sorter: true }
+  { dataIndex: 'joinDate', title: '入职日期', width: 120, valueType: 'date', sorter: true },
 ]
 
 function getStatusFilters() {
   return [
     { text: '在职', value: 'active' },
     { text: '离职', value: 'inactive' },
-    { text: '休假', value: 'vacation' }
+    { text: '休假', value: 'vacation' },
   ]
 }
 
 function getStatusType(status: string) {
-  const types: Record<string, any> = {
+  const types: Record<string, string> = {
     active: 'success',
     inactive: 'info',
-    vacation: 'warning'
+    vacation: 'warning',
   }
   return types[status] || 'info'
 }
@@ -161,7 +156,7 @@ function getStatusText(status: string) {
   const texts: Record<string, string> = {
     active: '在职',
     inactive: '离职',
-    vacation: '休假'
+    vacation: '休假',
   }
   return texts[status] || status
 }
@@ -172,7 +167,7 @@ function getScoreColor(score: number) {
   return '#f56c6c'
 }
 
-const mockData = ref<any[]>([])
+const mockData = ref<Record<string, unknown>[]>([])
 const loadingTime = ref(0)
 const lastFetchTime = ref(0)
 
@@ -184,7 +179,7 @@ const performanceData = [
     expectedTTI: '< 1.5s',
     performance: '优秀',
     performanceType: 'success',
-    recommendation: '无需优化'
+    recommendation: '无需优化',
   },
   {
     dataSize: '5千',
@@ -193,7 +188,7 @@ const performanceData = [
     expectedTTI: '< 2.0s',
     performance: '良好',
     performanceType: 'success',
-    recommendation: '启用虚拟滚动'
+    recommendation: '启用虚拟滚动',
   },
   {
     dataSize: '1万',
@@ -202,7 +197,7 @@ const performanceData = [
     expectedTTI: '< 2.5s',
     performance: '良好',
     performanceType: 'success',
-    recommendation: '启用虚拟滚动 + 分页'
+    recommendation: '启用虚拟滚动 + 分页',
   },
   {
     dataSize: '5万',
@@ -211,7 +206,7 @@ const performanceData = [
     expectedTTI: '< 3.0s',
     performance: '中等',
     performanceType: 'warning',
-    recommendation: '启用虚拟滚动 + 优化分页'
+    recommendation: '启用虚拟滚动 + 优化分页',
   },
   {
     dataSize: '10万',
@@ -220,8 +215,8 @@ const performanceData = [
     expectedTTI: '< 3.5s',
     performance: '中等',
     performanceType: 'warning',
-    recommendation: '启用虚拟滚动 + 按需加载'
-  }
+    recommendation: '启用虚拟滚动 + 按需加载',
+  },
 ]
 
 function generateMockData(count: number) {
@@ -239,7 +234,9 @@ function generateMockData(count: number) {
     phone: `138${String(Math.floor(Math.random() * 100000000)).padStart(8, '0')}`,
     status: statuses[Math.floor(Math.random() * statuses.length)],
     score: Math.floor(Math.random() * 100),
-    joinDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000 * 5).toISOString().split('T')[0]
+    joinDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000 * 5)
+      .toISOString()
+      .split('T')[0],
   }))
 }
 
@@ -247,21 +244,22 @@ async function fetchData(params: RequestParams): Promise<TableData> {
   const startTime = performance.now()
   console.log('请求数据，参数:', params)
 
-  await new Promise(resolve => setTimeout(resolve, 200))
+  await new Promise((resolve) => setTimeout(resolve, 200))
 
   let filteredData = [...mockData.value]
 
   if (searchText.value) {
     const searchLower = searchText.value.toLowerCase()
-    filteredData = filteredData.filter(item =>
-      item.name.toLowerCase().includes(searchLower) ||
-      item.email.toLowerCase().includes(searchLower) ||
-      item.phone.includes(searchText.value)
+    filteredData = filteredData.filter(
+      (item) =>
+        item.name.toLowerCase().includes(searchLower) ||
+        item.email.toLowerCase().includes(searchLower) ||
+        item.phone.includes(searchText.value)
     )
   }
 
   if (params.status && params.status.length > 0) {
-    filteredData = filteredData.filter(item => params.status.includes(item.status))
+    filteredData = filteredData.filter((item) => params.status.includes(item.status))
   }
 
   if (params.sortField && params.sortOrder) {
@@ -284,12 +282,14 @@ async function fetchData(params: RequestParams): Promise<TableData> {
   loadingTime.value = fetchTime
   lastFetchTime.value = Date.now()
 
-  console.log(`数据加载完成，耗时: ${fetchTime.toFixed(2)}ms，数据量: ${filteredData.length}，返回: ${end - start}条`)
+  console.log(
+    `数据加载完成，耗时: ${fetchTime.toFixed(2)}ms，数据量: ${filteredData.length}，返回: ${end - start}条`
+  )
 
   return {
     data: filteredData.slice(start, end),
     total: filteredData.length,
-    success: true
+    success: true,
   }
 }
 

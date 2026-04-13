@@ -41,9 +41,9 @@ export function useUrlSync(tableState: TableState, onStateChange?: () => void) {
 
   // 状态序列化到 URL
   const serializeStateToUrl = (state: TableState) => {
-    const query: Record<string, any> = {
+    const query: Record<string, unknown> = {
       current: state.current,
-      pageSize: state.pageSize
+      pageSize: state.pageSize,
     }
 
     if (state.sorter) {
@@ -90,6 +90,6 @@ export function useUrlSync(tableState: TableState, onStateChange?: () => void) {
 
   return {
     initFromUrl,
-    clearUrlState
+    clearUrlState,
   }
 }

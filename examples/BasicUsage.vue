@@ -8,7 +8,7 @@
         :columns="columns"
         :request="fetchData"
         row-key="id"
-        :pagination="{ pageSizes: [5, 10, 20,50] }"
+        :pagination="{ pageSizes: [5, 10, 20, 50] }"
         show-toolbar
       >
         <!-- 工具栏左侧自定义 -->
@@ -33,9 +33,7 @@
         <template #action="{ row }">
           <el-space>
             <el-button size="small" @click="handleEdit(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">
-              删除
-            </el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row)"> 删除 </el-button>
           </el-space>
         </template>
       </ProTable>
@@ -61,9 +59,7 @@
         :sync-url="true"
         show-toolbar
       />
-      <p class="demo-tip">
-        尝试修改分页、排序、筛选，然后刷新页面或复制链接分享
-      </p>
+      <p class="demo-tip">尝试修改分页、排序、筛选，然后刷新页面或复制链接分享</p>
     </div>
   </div>
 </template>
@@ -83,7 +79,7 @@ const columns: ColumnProps[] = [
     dataIndex: 'id',
     title: 'ID',
     width: 80,
-    sorter: true
+    sorter: true,
   },
   {
     dataIndex: 'name',
@@ -91,20 +87,20 @@ const columns: ColumnProps[] = [
     width: 150,
     sorter: true,
     ellipsis: true,
-    copyable: true
+    copyable: true,
   },
   {
     dataIndex: 'age',
     title: '年龄',
     width: 100,
     valueType: 'digit',
-    sorter: true
+    sorter: true,
   },
   {
     dataIndex: 'email',
     title: '邮箱',
     width: 200,
-    ellipsis: true
+    ellipsis: true,
   },
   {
     dataIndex: 'status',
@@ -113,26 +109,26 @@ const columns: ColumnProps[] = [
     valueType: 'enum',
     valueEnum: {
       active: { text: '活跃', status: 'success' },
-      inactive: { text: '禁用', status: 'info' }
+      inactive: { text: '禁用', status: 'info' },
     },
     filters: [
       { text: '活跃', value: 'active' },
-      { text: '禁用', value: 'inactive' }
-    ]
+      { text: '禁用', value: 'inactive' },
+    ],
   },
   {
     dataIndex: 'createdAt',
     title: '创建时间',
     width: 180,
     valueType: 'dateTime',
-    sorter: true
+    sorter: true,
   },
   {
     dataIndex: 'action',
     title: '操作',
     width: 180,
-    fixed: 'right'
-  }
+    fixed: 'right',
+  },
 ]
 
 // 简单列配置（用于虚拟滚动示例）
@@ -140,7 +136,7 @@ const simpleColumns: ColumnProps[] = [
   { dataIndex: 'id', title: 'ID', width: 80 },
   { dataIndex: 'name', title: '姓名', width: 150 },
   { dataIndex: 'age', title: '年龄', width: 100 },
-  { dataIndex: 'email', title: '邮箱', width: 200 }
+  { dataIndex: 'email', title: '邮箱', width: 200 },
 ]
 
 // 模拟数据
@@ -150,7 +146,7 @@ const mockData = Array.from({ length: 100 }, (_, i) => ({
   age: Math.floor(Math.random() * 50) + 18,
   email: `user${i + 1}@example.com`,
   status: Math.random() > 0.5 ? 'active' : 'inactive',
-  createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString()
+  createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
 }))
 
 // 模拟大数据
@@ -158,7 +154,7 @@ const mockLargeData = Array.from({ length: 10000 }, (_, i) => ({
   id: i + 1,
   name: `大数据用户 ${i + 1}`,
   age: Math.floor(Math.random() * 50) + 18,
-  email: `bigdata${i + 1}@example.com`
+  email: `bigdata${i + 1}@example.com`,
 }))
 
 // 数据请求函数
@@ -166,22 +162,21 @@ async function fetchData(params: RequestParams): Promise<TableData> {
   console.log('请求参数:', params)
 
   // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
   // 筛选数据
   let filteredData = [...mockData]
 
   // 搜索
   if (searchText.value) {
-    filteredData = filteredData.filter(item =>
-      item.name.includes(searchText.value) ||
-      item.email.includes(searchText.value)
+    filteredData = filteredData.filter(
+      (item) => item.name.includes(searchText.value) || item.email.includes(searchText.value)
     )
   }
 
   // 筛选
   if (params.status) {
-    filteredData = filteredData.filter(item => params.status.includes(item.status))
+    filteredData = filteredData.filter((item) => params.status.includes(item.status))
   }
 
   // 排序
@@ -205,14 +200,14 @@ async function fetchData(params: RequestParams): Promise<TableData> {
   return {
     data: pageData,
     total: filteredData.length,
-    success: true
+    success: true,
   }
 }
 
 // 大数据请求函数
 async function fetchLargeData(params: RequestParams): Promise<TableData> {
   // 模拟大数据加载延迟
-  await new Promise(resolve => setTimeout(resolve, 500))
+  await new Promise((resolve) => setTimeout(resolve, 500))
 
   // 简单分页
   const start = (params.current - 1) * params.pageSize
@@ -222,7 +217,7 @@ async function fetchLargeData(params: RequestParams): Promise<TableData> {
   return {
     data: pageData,
     total: mockLargeData.length,
-    success: true
+    success: true,
   }
 }
 
@@ -237,11 +232,11 @@ function handleAdd() {
   ElMessage.info('点击了新增按钮')
 }
 
-function handleEdit(row: any) {
+function handleEdit(row: Record<string, unknown>) {
   ElMessage.success(`编辑用户: ${row.name}`)
 }
 
-function handleDelete(row: any) {
+function handleDelete(row: Record<string, unknown>) {
   ElMessage.warning(`删除用户: ${row.name}`)
 }
 </script>

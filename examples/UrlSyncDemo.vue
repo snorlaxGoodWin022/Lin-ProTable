@@ -83,10 +83,10 @@ const columns: ColumnProps[] = [
     width: 100,
     filters: [
       { text: '活跃', value: 'active' },
-      { text: '禁用', value: 'inactive' }
-    ]
+      { text: '禁用', value: 'inactive' },
+    ],
   },
-  { dataIndex: 'createdAt', title: '创建时间', width: 180, valueType: 'dateTime', sorter: true }
+  { dataIndex: 'createdAt', title: '创建时间', width: 180, valueType: 'dateTime', sorter: true },
 ]
 
 const mockData = Array.from({ length: 100 }, (_, i) => ({
@@ -95,23 +95,23 @@ const mockData = Array.from({ length: 100 }, (_, i) => ({
   age: Math.floor(Math.random() * 50) + 18,
   email: `user${i + 1}@example.com`,
   status: Math.random() > 0.5 ? 'active' : 'inactive',
-  createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString()
+  createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
 }))
 
 async function fetchData(params: RequestParams): Promise<TableData> {
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
   let filteredData = [...mockData]
 
   if (params.status && params.status.length > 0) {
-    filteredData = filteredData.filter(item => params.status.includes(item.status))
+    filteredData = filteredData.filter((item) => params.status.includes(item.status))
   }
 
   if (params.sortField && params.sortOrder) {
     filteredData.sort((a, b) => {
       const aVal = a[params.sortField!]
       const bVal = b[params.sortField!]
-      return params.sortOrder === 'ascend' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
+      return params.sortOrder === 'ascend' ? (aVal > bVal ? 1 : -1) : aVal < bVal ? 1 : -1
     })
   }
 
@@ -121,16 +121,19 @@ async function fetchData(params: RequestParams): Promise<TableData> {
   return {
     data: filteredData.slice(start, end),
     total: filteredData.length,
-    success: true
+    success: true,
   }
 }
 
 function copyUrl() {
-  navigator.clipboard.writeText(currentUrl.value).then(() => {
-    ElMessage.success('链接已复制')
-  }).catch(() => {
-    ElMessage.error('复制失败')
-  })
+  navigator.clipboard
+    .writeText(currentUrl.value)
+    .then(() => {
+      ElMessage.success('链接已复制')
+    })
+    .catch(() => {
+      ElMessage.error('复制失败')
+    })
 }
 
 function refreshPage() {

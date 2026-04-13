@@ -8,11 +8,7 @@
       <el-space>
         <!-- 刷新按钮 -->
         <el-tooltip content="刷新">
-          <el-button
-            :loading="loading"
-            :icon="Refresh"
-            @click="handleRefresh"
-          />
+          <el-button :loading="loading" :icon="Refresh" @click="handleRefresh" />
         </el-tooltip>
 
         <!-- 列设置 -->
@@ -36,10 +32,7 @@
 
         <!-- 导出 -->
         <el-tooltip content="导出">
-          <el-button
-            :icon="Download"
-            @click="handleExport"
-          />
+          <el-button :icon="Download" @click="handleExport" />
         </el-tooltip>
 
         <!-- 自定义工具栏右侧内容 -->
@@ -64,13 +57,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="handleCancel">取消</el-button>
-          <el-button
-            type="primary"
-            :loading="applying"
-            @click="handleConfirm"
-          >
-            确定
-          </el-button>
+          <el-button type="primary" :loading="applying" @click="handleConfirm"> 确定 </el-button>
         </span>
       </template>
     </el-dialog>
@@ -116,11 +103,14 @@ function handleColumnCommand(command: string) {
       break
     case 'reset-columns':
       emit('update:column-state', {
-        order: props.columns.map(col => col.dataIndex),
-        visible: props.columns.reduce((acc, col) => {
-          acc[col.dataIndex] = !col.hideInTable
-          return acc
-        }, {} as Record<string, boolean>)
+        order: props.columns.map((col) => col.dataIndex),
+        visible: props.columns.reduce(
+          (acc, col) => {
+            acc[col.dataIndex] = !col.hideInTable
+            return acc
+          },
+          {} as Record<string, boolean>
+        ),
       })
       break
   }
@@ -136,16 +126,16 @@ function handleCancel() {
 
 async function handleConfirm() {
   applying.value = true
-  
+
   try {
     // 调用 ColumnSetting 的 applyChanges 方法
     if (columnSettingRef.value && columnSettingRef.value.applyChanges) {
       columnSettingRef.value.applyChanges()
     }
-    
+
     // 模拟加载延迟（实际应用中可能需要等待表格重新渲染）
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
     // 关闭弹窗
     showColumnDialog.value = false
   } catch (error) {

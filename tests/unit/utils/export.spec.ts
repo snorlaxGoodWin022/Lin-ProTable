@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { exportToExcel, exportToCsv } from '../../../src/components/ProTable/utils/export'
 import type { ColumnProps } from '../../../src/components/ProTable/types'
+import * as XLSX from 'xlsx'
 
 // 模拟 xlsx 库
 vi.mock('xlsx', async () => {
@@ -11,7 +12,7 @@ vi.mock('xlsx', async () => {
       ...actual.utils,
       aoa_to_sheet: vi.fn(() => ({
         '!ref': 'A1:D11',
-        '!cols': []
+        '!cols': [],
       })),
       book_new: vi.fn(() => ({})),
       book_append_sheet: vi.fn(),
@@ -19,9 +20,9 @@ vi.mock('xlsx', async () => {
       encode_cell: vi.fn(({ r, c }) => {
         const col = String.fromCharCode(65 + c)
         return `${col}${r + 1}`
-      })
+      }),
     },
-    writeFile: vi.fn()
+    writeFile: vi.fn(),
   }
 })
 
@@ -32,35 +33,36 @@ global.document.createElement = vi.fn(() => ({
   href: '',
   download: '',
   click: vi.fn(),
-  setAttribute: vi.fn()
+  setAttribute: vi.fn(),
 }))
 global.document.body.appendChild = vi.fn()
 global.document.body.removeChild = vi.fn()
 
 describe('导出功能 - 配置化表格数据导出', () => {
   let mockColumns: ColumnProps[]
-  let mockData: any[]
+  let mockData: Record<string, unknown>[]
 
   beforeEach(() => {
+    vi.clearAllMocks()
+
     // 准备测试数据
     mockColumns = [
       { dataIndex: 'id', title: 'ID', width: 80 },
       { dataIndex: 'name', title: '姓名', width: 150 },
       { dataIndex: 'age', title: '年龄', width: 100, valueType: 'digit' },
-      { dataIndex: 'status', title: '状态', width: 100, valueType: 'enum', hideInExport: true }
+      { dataIndex: 'status', title: '状态', width: 100, valueType: 'enum', hideInExport: true },
     ]
 
     mockData = [
       { id: 1, name: '张三', age: 25, status: 'active' },
       { id: 2, name: '李四', age: 30, status: 'inactive' },
-      { id: 3, name: '王五', age: 28, status: 'active' }
+      { id: 3, name: '王五', age: 28, status: 'active' },
     ]
   })
 
   test('应该过滤 hideInExport 的列', () => {
     // 执行
-    const { utils } = require('xlsx')
-    const aoaToSheetSpy = vi.spyOn(utils, 'aoa_to_sheet')
+    const aoaToSheetSpy = vi.spyOn(XLSX.utils, 'aoa_to_sheet')
 
     exportToExcel(mockColumns, mockData, 'test.xlsx')
 
@@ -75,16 +77,20 @@ describe('导出功能 - 配置化表格数据导出', () => {
       { dataIndex: 'amount', title: '金额', valueType: 'money' },
       { dataIndex: 'rate', title: '比率', valueType: 'percent' },
       { dataIndex: 'date', title: '日期', valueType: 'date' },
-      { dataIndex: 'datetime', title: '时间', valueType: 'dateTime' }
+      { dataIndex: 'datetime', title: '时间', valueType: 'dateTime' },
     ]
 
     const dataWithTypes = [
-      { amount: 1000.5, rate: 0.85, date: '2024-01-15T10:30:00Z', datetime: '2024-01-15T10:30:00Z' }
+      {
+        amount: 1000.5,
+        rate: 0.85,
+        date: '2024-01-15T10:30:00Z',
+        datetime: '2024-01-15T10:30:00Z',
+      },
     ]
 
     // 执行
-    const { utils } = require('xlsx')
-    const aoaToSheetSpy = vi.spyOn(utils, 'aoa_to_sheet')
+    const aoaToSheetSpy = vi.spyOn(XLSX.utils, 'aoa_to_sheet')
 
     exportToExcel(columnsWithTypes, dataWithTypes, 'test.xlsx')
 
@@ -111,15 +117,14 @@ describe('导出功能 - 配置化表格数据导出', () => {
       {
         dataIndex: 'name',
         title: '姓名',
-        customRender: ({ text, record }) => `${text} (ID: ${record.id})`
-      }
+        customRender: ({ text, record }) => `${text} (ID: ${record.id})`,
+      },
     ]
 
     const data = [{ id: 1, name: '张三' }]
 
     // 执行
-    const { utils } = require('xlsx')
-    const aoaToSheetSpy = vi.spyOn(utils, 'aoa_to_sheet')
+    const aoaToSheetSpy = vi.spyOn(XLSX.utils, 'aoa_to_sheet')
 
     exportToExcel(columnsWithRender, data, 'test.xlsx')
 
@@ -138,20 +143,19 @@ describe('导出功能 - 配置化表格数据导出', () => {
         valueType: 'enum',
         valueEnum: {
           active: { text: '活跃', status: 'success' },
-          inactive: { text: '禁用', status: 'info' }
-        }
-      }
+          inactive: { text: '禁用', status: 'info' },
+        },
+      },
     ]
 
     const data = [
       { status: 'active' },
       { status: 'inactive' },
-      { status: 'unknown' } // 未知值
+      { status: 'unknown' }, // 未知值
     ]
 
     // 执行
-    const { utils } = require('xlsx')
-    const aoaToSheetSpy = vi.spyOn(utils, 'aoa_to_sheet')
+    const aoaToSheetSpy = vi.spyOn(XLSX.utils, 'aoa_to_sheet')
 
     exportToExcel(columnsWithEnum, data, 'test.xlsx')
 
@@ -168,12 +172,12 @@ describe('导出功能 - 配置化表格数据导出', () => {
     // 准备
     const columns: ColumnProps[] = [
       { dataIndex: 'id', title: 'ID' },
-      { dataIndex: 'name', title: '姓名' }
+      { dataIndex: 'name', title: '姓名' },
     ]
 
     const data = [
       { id: 1, name: '张三,测试' }, // 包含逗号，需要转义
-      { id: 2, name: '李四\n换行' } // 包含换行符，需要转义
+      { id: 2, name: '李四\n换行' }, // 包含换行符，需要转义
     ]
 
     // 执行
@@ -189,18 +193,17 @@ describe('导出功能 - 配置化表格数据导出', () => {
     const columns: ColumnProps[] = [
       { dataIndex: 'id', title: 'ID' },
       { dataIndex: 'name', title: '姓名' },
-      { dataIndex: 'optional', title: '可选字段' }
+      { dataIndex: 'optional', title: '可选字段' },
     ]
 
     const data = [
       { id: 1, name: '张三', optional: null },
       { id: 2, name: '李四', optional: undefined },
-      { id: 3, name: '王五' } // 缺少 optional 字段
+      { id: 3, name: '王五' }, // 缺少 optional 字段
     ]
 
     // 执行
-    const { utils } = require('xlsx')
-    const aoaToSheetSpy = vi.spyOn(utils, 'aoa_to_sheet')
+    const aoaToSheetSpy = vi.spyOn(XLSX.utils, 'aoa_to_sheet')
 
     exportToExcel(columns, data, 'test.xlsx')
 
@@ -218,7 +221,7 @@ describe('导出功能 - 配置化表格数据导出', () => {
     const columns: ColumnProps[] = [
       { dataIndex: 'id', title: 'ID', width: 80 },
       { dataIndex: 'name', title: '姓名', width: 200 },
-      { dataIndex: 'age', title: '年龄' } // 无宽度设置
+      { dataIndex: 'age', title: '年龄' }, // 无宽度设置
     ]
 
     const data = [{ id: 1, name: '张三', age: 25 }]

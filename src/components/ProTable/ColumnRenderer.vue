@@ -20,15 +20,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { DocumentCopy } from '@element-plus/icons-vue'
 import type { ColumnProps } from './types'
 
 interface Props {
   column: ColumnProps
-  value: any
-  record: any
+  value: unknown
+  record: Record<string, unknown>
   index: number
 }
 
@@ -57,7 +57,7 @@ const displayText = computed(() => {
 })
 
 // 格式化值
-function formatValue(value: any): any {
+function formatValue(value: unknown): unknown {
   if (value == null || value === '') return ''
 
   const { column } = props
@@ -79,7 +79,7 @@ function formatValue(value: any): any {
       case 'money':
         return `¥${Number(value).toLocaleString('zh-CN', {
           minimumFractionDigits: 2,
-          maximumFractionDigits: 2
+          maximumFractionDigits: 2,
         })}`
 
       case 'percent':
@@ -124,7 +124,7 @@ function getDisplayText(): string {
     return JSON.stringify(formatted)
   }
 
-  return String(formformed || '')
+  return String(formatted ?? '')
 }
 
 // 复制文本
@@ -134,7 +134,7 @@ async function handleCopy() {
   try {
     await navigator.clipboard.writeText(text)
     ElMessage.success('已复制到剪贴板')
-  } catch (err) {
+  } catch {
     // 降级方案
     const textarea = document.createElement('textarea')
     textarea.value = text

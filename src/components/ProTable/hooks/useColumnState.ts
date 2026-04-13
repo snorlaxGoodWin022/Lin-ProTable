@@ -1,26 +1,29 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import type { ColumnProps, ColumnState } from '../types'
 
 export function useColumnState(columns: ColumnProps[], initialState?: Partial<ColumnState>) {
   // 初始列顺序
-  const initialOrder = columns.map(col => col.dataIndex)
-  const initialVisible = columns.reduce((acc, col) => {
-    acc[col.dataIndex] = !col.hideInTable
-    return acc
-  }, {} as Record<string, boolean>)
+  const initialOrder = columns.map((col) => col.dataIndex)
+  const initialVisible = columns.reduce(
+    (acc, col) => {
+      acc[col.dataIndex] = !col.hideInTable
+      return acc
+    },
+    {} as Record<string, boolean>
+  )
 
   // 列状态
   const columnState = ref<ColumnState>({
     order: [...initialOrder],
     visible: { ...initialVisible },
-    ...initialState
+    ...initialState,
   })
 
   // 处理后的列配置
   const processedColumns = computed(() => {
     return columnState.value.order
-      .map(key => columns.find(col => col.dataIndex === key))
-      .filter(col => col && columnState.value.visible[col.dataIndex])
+      .map((key) => columns.find((col) => col.dataIndex === key))
+      .filter((col) => col && columnState.value.visible[col.dataIndex])
   })
 
   // 更新列状态
@@ -31,7 +34,7 @@ export function useColumnState(columns: ColumnProps[], initialState?: Partial<Co
     if (updates.visible) {
       columnState.value.visible = {
         ...columnState.value.visible,
-        ...updates.visible
+        ...updates.visible,
       }
     }
   }
@@ -65,6 +68,6 @@ export function useColumnState(columns: ColumnProps[], initialState?: Partial<Co
     updateColumnState,
     resetColumnState,
     toggleColumnVisible,
-    moveColumn
+    moveColumn,
   }
 }

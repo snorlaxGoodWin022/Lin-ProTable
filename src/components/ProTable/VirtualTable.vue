@@ -7,10 +7,7 @@
       @scroll="handleScroll"
     >
       <div class="virtual-table-content" :style="{ height: totalHeight + 'px' }">
-        <table
-          class="virtual-table"
-          :style="{ transform: `translateY(${translateY}px)` }"
-        >
+        <table class="virtual-table" :style="{ transform: `translateY(${translateY}px)` }">
           <thead>
             <tr>
               <th
@@ -49,7 +46,11 @@
                     />
                   </template>
                   <!-- cell 模式可点击编辑 -->
-                  <template v-else-if="editableContext && editableContext.editMode === 'cell' && column.editable">
+                  <template
+                    v-else-if="
+                      editableContext && editableContext.editMode === 'cell' && column.editable
+                    "
+                  >
                     <div class="cell-editable" @click.stop="handleCellClick(row, column)">
                       <slot
                         v-if="$slots[column.dataIndex]"
@@ -107,9 +108,9 @@ import type { ColumnProps, EditableContext } from './types'
 
 interface Props {
   columns: ColumnProps[]
-  data: any[]
+  data: Record<string, unknown>[]
   loading?: boolean
-  rowKey?: string | ((record: any) => string)
+  rowKey?: string | ((record: Record<string, unknown>) => string)
   estimatedRowHeight?: number
   buffer?: number
 }
@@ -118,15 +119,15 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   rowKey: 'id',
   estimatedRowHeight: 55,
-  buffer: 5
+  buffer: 5,
 })
 
-const emit = defineEmits<{
-  (e: 'row-click', row: any, event: Event): void
+defineEmits<{
+  (e: 'row-click', row: Record<string, unknown>, event: Event): void
 }>()
 
 // 注入编辑上下文
-const editableContext = inject<EditableContext>('editableContext', null as any)
+const editableContext = inject<EditableContext | null>('editableContext', null)
 
 // 容器引用
 const tableContainer = ref<HTMLDivElement>()
@@ -165,7 +166,7 @@ const translateY = computed(() => {
 })
 
 // 获取行键值
-function getRowKey(row: any): string {
+function getRowKey(row: Record<string, unknown>): string {
   if (typeof props.rowKey === 'function') {
     return props.rowKey(row)
   }
@@ -173,20 +174,20 @@ function getRowKey(row: any): string {
 }
 
 // 判断单元格是否编辑态
-function isCellEditing(row: any, column: ColumnProps): boolean {
+function isCellEditing(row: Record<string, unknown>, column: ColumnProps): boolean {
   if (!editableContext || !column.editable) return false
   return editableContext.isEditing(getRowKey(row), column.dataIndex)
 }
 
 // 获取单元格当前值
-function getCellValue(row: any, column: ColumnProps): any {
+function getCellValue(row: Record<string, unknown>, column: ColumnProps): unknown {
   if (!editableContext) return row[column.dataIndex]
   const editValue = editableContext.getEditingValue(getRowKey(row), column.dataIndex)
   return editValue !== undefined ? editValue : row[column.dataIndex]
 }
 
 // cell 模式点击
-function handleCellClick(row: any, column: ColumnProps) {
+function handleCellClick(row: Record<string, unknown>, column: ColumnProps) {
   if (!editableContext) return
   editableContext.startCellEdit(getRowKey(row), column.dataIndex, row)
 }

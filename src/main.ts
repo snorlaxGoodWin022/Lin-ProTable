@@ -17,8 +17,8 @@ const router = createRouter({
     { path: '/basic', component: BasicUsage },
     { path: '/url-sync', component: UrlSyncDemo },
     { path: '/large-data', component: LargeDataDemo },
-    { path: '/edit', component: EditDemo }
-  ]
+    { path: '/edit', component: EditDemo },
+  ],
 })
 
 // 创建应用

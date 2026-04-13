@@ -56,7 +56,9 @@
             <template #default="scope">
               <template v-if="editingRowKeys.has(getRowKeyValue(scope.row))">
                 <el-space>
-                  <el-button size="small" type="primary" @click="handleRowSave(scope.row)">保存</el-button>
+                  <el-button size="small" type="primary" @click="handleRowSave(scope.row)"
+                    >保存</el-button
+                  >
                   <el-button size="small" @click="handleRowCancel(scope.row)">取消</el-button>
                 </el-space>
               </template>
@@ -69,7 +71,9 @@
                   :value="scope.row[column.dataIndex]"
                 />
                 <el-space v-else>
-                  <el-button size="small" type="primary" @click="handleRowEdit(scope.row)">编辑</el-button>
+                  <el-button size="small" type="primary" @click="handleRowEdit(scope.row)"
+                    >编辑</el-button
+                  >
                   <slot name="action-extra" :row="scope.row" :index="scope.$index" />
                 </el-space>
               </template>
@@ -103,10 +107,7 @@
               </template>
               <!-- cell 模式：可点击进入编辑 -->
               <template v-else-if="editMode === 'cell' && column.editable">
-                <div
-                  class="cell-editable"
-                  @click="handleCellClick(scope.row, column)"
-                >
+                <div class="cell-editable" @click="handleCellClick(scope.row, column)">
                   <slot
                     v-if="$slots[column.dataIndex]"
                     :name="column.dataIndex"
@@ -163,8 +164,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, provide, toRef } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, onMounted, provide, toRef } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Edit } from '@element-plus/icons-vue'
 import ProTableToolbar from './Toolbar.vue'
@@ -176,22 +176,26 @@ import { useTableState } from './hooks/useTableState'
 import { useColumnState } from './hooks/useColumnState'
 import { useUrlSync } from './hooks/useUrlSync'
 import { useEditable } from './hooks/useEditable'
-import type { ColumnProps, ProTableProps, TableState, TableData } from './types'
+import type { ColumnProps, ProTableProps, TableState } from './types'
 
 const props = withDefaults(defineProps<ProTableProps>(), {
   rowKey: 'id',
   showToolbar: true,
-  pagination: () => ({ enabled: true, pageSizes: [10, 20, 50, 100], layout: 'total, sizes, prev, pager, next, jumper' }),
+  pagination: () => ({
+    enabled: true,
+    pageSizes: [10, 20, 50, 100],
+    layout: 'total, sizes, prev, pager, next, jumper',
+  }),
   virtualScroll: () => ({ enabled: false, estimatedRowHeight: 55 }),
   syncUrl: true,
-  editMode: undefined
+  editMode: undefined,
 })
 
 const emit = defineEmits<{
   (e: 'change', state: TableState): void
-  (e: 'row-click', row: any, event: Event): void
-  (e: 'update:params', params: any): void
-  (e: 'save', params: any): void
+  (e: 'row-click', row: Record<string, unknown>, event: Event): void
+  (e: 'update:params', params: Record<string, unknown>): void
+  (e: 'save', params: Record<string, unknown>): void
 }>()
 
 // 状态管理
@@ -205,7 +209,7 @@ if (props.syncUrl) {
 }
 
 // 表格数据
-const dataSource = ref<any[]>([])
+const dataSource = ref<Record<string, unknown>[]>([])
 const loading = ref(false)
 const total = ref(0)
 
@@ -213,7 +217,7 @@ const total = ref(0)
 const editModeRef = toRef(props, 'editMode')
 
 // 获取行 key 值
-function getRowKeyValue(row: any): string | number {
+function getRowKeyValue(row: Record<string, unknown>): string | number {
   if (typeof props.rowKey === 'function') {
     return props.rowKey(row)
   }
@@ -221,8 +225,8 @@ function getRowKeyValue(row: any): string | number {
 }
 
 // 根据 rowKey 查找记录
-function getRecordByKey(rowId: string | number): any | undefined {
-  return dataSource.value.find(row => {
+function getRecordByKey(rowId: string | number): Record<string, unknown> | undefined {
+  return dataSource.value.find((row) => {
     const key = getRowKeyValue(row)
     return String(key) === String(rowId)
   })
@@ -232,34 +236,34 @@ const {
   editingRowKeys,
   isEditing,
   getEditingValue,
-  updateEditingValue,
+
   startCellEdit,
   saveCellEdit,
   cancelCellEdit,
   startRowEdit,
   saveRowEdit,
   cancelRowEdit,
-  editableContext
+  editableContext,
 } = useEditable({
   editMode: editModeRef,
   onSave: props.onSave,
   getRecordByKey,
   dataSource,
-  rowKey: props.rowKey
+  rowKey: props.rowKey,
 })
 
 // provide 编辑上下文给子组件
 provide('editableContext', editableContext)
 
 // 判断单元格是否处于编辑态
-function isCellEditing(row: any, column: ColumnProps): boolean {
+function isCellEditing(row: Record<string, unknown>, column: ColumnProps): boolean {
   if (!props.editMode || !column.editable) return false
   const rowId = getRowKeyValue(row)
   return isEditing(rowId, column.dataIndex)
 }
 
 // 获取单元格当前值（编辑中取编辑值，否则取原始值）
-function getCellValue(row: any, column: ColumnProps): any {
+function getCellValue(row: Record<string, unknown>, column: ColumnProps): unknown {
   const rowId = getRowKeyValue(row)
   const editValue = getEditingValue(rowId, column.dataIndex)
   return editValue !== undefined ? editValue : row[column.dataIndex]
@@ -271,26 +275,26 @@ function isEditModeColumn(column: ColumnProps): boolean {
 }
 
 // 行编辑：点击编辑
-function handleRowEdit(row: any) {
+function handleRowEdit(row: Record<string, unknown>) {
   const rowId = getRowKeyValue(row)
   startRowEdit(rowId, row)
 }
 
 // 行编辑：保存
-async function handleRowSave(row: any) {
+async function handleRowSave(row: Record<string, unknown>) {
   const rowId = getRowKeyValue(row)
   await saveRowEdit(rowId)
   emit('save', { rowId, record: row })
 }
 
 // 行编辑：取消
-function handleRowCancel(row: any) {
+function handleRowCancel(row: Record<string, unknown>) {
   const rowId = getRowKeyValue(row)
   cancelRowEdit(rowId)
 }
 
 // cell 模式下，点击单元格进入编辑
-function handleCellClick(row: any, column: ColumnProps) {
+function handleCellClick(row: Record<string, unknown>, column: ColumnProps) {
   if (props.editMode !== 'cell' || !column.editable) return
   const rowId = getRowKeyValue(row)
   startCellEdit(rowId, column.dataIndex, row)
@@ -305,7 +309,7 @@ const pagination = computed(() => {
     enabled: true,
     pageSizes: [10, 20, 50, 100],
     layout: 'total, sizes, prev, pager, next, jumper',
-    ...(typeof props.pagination === 'object' ? props.pagination : {})
+    ...(typeof props.pagination === 'object' ? props.pagination : {}),
   }
 })
 
@@ -317,7 +321,7 @@ const virtualScroll = computed(() => {
   return {
     enabled: false,
     estimatedRowHeight: 55,
-    ...(typeof props.virtualScroll === 'object' ? props.virtualScroll : {})
+    ...(typeof props.virtualScroll === 'object' ? props.virtualScroll : {}),
   }
 })
 
@@ -331,7 +335,7 @@ async function fetchData() {
       current: tableState.current,
       pageSize: tableState.pageSize,
       ...tableState.filters,
-      ...props.params
+      ...props.params,
     }
 
     // 添加排序参数
@@ -357,14 +361,20 @@ async function fetchData() {
 }
 
 // 表格事件处理
-function handleSortChange({ prop, order }: { prop: string; order: 'ascending' | 'descending' | null }) {
+function handleSortChange({
+  prop,
+  order,
+}: {
+  prop: string
+  order: 'ascending' | 'descending' | null
+}) {
   if (order) {
     setTableState({
       sorter: {
         field: prop,
-        order: order === 'ascending' ? 'ascend' : 'descend'
+        order: order === 'ascending' ? 'ascend' : 'descend',
       },
-      current: 1
+      current: 1,
     })
   } else {
     setTableState({ sorter: null })
@@ -372,9 +382,9 @@ function handleSortChange({ prop, order }: { prop: string; order: 'ascending' | 
   fetchData()
 }
 
-function handleFilterChange(filters: Record<string, any[]>) {
-  const activeFilters: Record<string, any[]> = {}
-  Object.keys(filters).forEach(key => {
+function handleFilterChange(filters: Record<string, unknown[]>) {
+  const activeFilters: Record<string, unknown[]> = {}
+  Object.keys(filters).forEach((key) => {
     if (filters[key] && filters[key].length > 0) {
       activeFilters[key] = filters[key]
     }
@@ -382,7 +392,7 @@ function handleFilterChange(filters: Record<string, any[]>) {
 
   setTableState({
     filters: activeFilters,
-    current: 1
+    current: 1,
   })
   fetchData()
 }
@@ -397,7 +407,7 @@ function handlePageSizeChange(pageSize: number) {
   fetchData()
 }
 
-function handleRowClick(row: any, event: Event) {
+function handleRowClick(row: Record<string, unknown>, event: Event) {
   emit('row-click', row, event)
 }
 
@@ -424,7 +434,7 @@ defineExpose({
   cancelCellEdit,
   startRowEdit,
   saveRowEdit,
-  cancelRowEdit
+  cancelRowEdit,
 })
 
 // 初始加载

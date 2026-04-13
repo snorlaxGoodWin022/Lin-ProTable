@@ -11,9 +11,9 @@ interface EditingCell {
 export function useEditable(options: {
   editMode: Ref<'cell' | 'row' | 'batch' | undefined>
   onSave?: (params: EditSaveParams) => Promise<boolean>
-  getRecordByKey: (rowId: string | number) => any | undefined
-  dataSource: Ref<any[]>
-  rowKey: string | ((record: any) => string)
+  getRecordByKey: (rowId: string | number) => Record<string, unknown> | undefined
+  dataSource: Ref<Record<string, unknown>[]>
+  rowKey: string | ((record: Record<string, unknown>) => string)
 }) {
   const { editMode, onSave, getRecordByKey, dataSource, rowKey } = options
 
@@ -24,21 +24,21 @@ export function useEditable(options: {
   const editingRowKeys = reactive(new Set<string | number>())
 
   // 编辑中的值缓存 key = rowId, value = { [dataIndex]: value }
-  const editingValues = reactive(new Map<string | number, Record<string, any>>())
+  const editingValues = reactive(new Map<string | number, Record<string, unknown>>())
 
   // 原始值 (用于回滚)
-  const originalValues = reactive(new Map<string | number, Record<string, any>>())
+  const originalValues = reactive(new Map<string | number, Record<string, unknown>>())
 
   // 通过 rowKey 查找数据行索引
   function findRowIndex(rowId: string | number): number {
-    return dataSource.value.findIndex(row => {
+    return dataSource.value.findIndex((row) => {
       const key = typeof rowKey === 'function' ? rowKey(row) : row[rowKey]
       return String(key) === String(rowId)
     })
   }
 
   // 更新 dataSource 中单个字段
-  function updateDataSourceField(rowId: string | number, dataIndex: string, value: any) {
+  function updateDataSourceField(rowId: string | number, dataIndex: string, value: unknown) {
     const index = findRowIndex(rowId)
     if (index !== -1) {
       dataSource.value[index][dataIndex] = value
@@ -46,10 +46,10 @@ export function useEditable(options: {
   }
 
   // 更新 dataSource 中整行多个字段
-  function updateDataSourceRecord(rowId: string | number, values: Record<string, any>) {
+  function updateDataSourceRecord(rowId: string | number, values: Record<string, unknown>) {
     const index = findRowIndex(rowId)
     if (index !== -1) {
-      Object.keys(values).forEach(key => {
+      Object.keys(values).forEach((key) => {
         dataSource.value[index][key] = values[key]
       })
     }
@@ -75,7 +75,7 @@ export function useEditable(options: {
   }
 
   // 获取编辑值
-  function getEditingValue(rowId: string | number, dataIndex: string): any {
+  function getEditingValue(rowId: string | number, dataIndex: string): unknown {
     const values = editingValues.get(rowId)
     if (values && dataIndex in values) {
       return values[dataIndex]
@@ -84,7 +84,7 @@ export function useEditable(options: {
   }
 
   // 更新编辑值
-  function updateEditingValue(rowId: string | number, dataIndex: string, value: any): void {
+  function updateEditingValue(rowId: string | number, dataIndex: string, value: unknown): void {
     const values = editingValues.get(rowId)
     if (values) {
       values[dataIndex] = value
@@ -93,11 +93,17 @@ export function useEditable(options: {
 
   // ---- Cell 模式 ----
 
-  function startCellEdit(rowId: string | number, dataIndex: string, record: any): void {
+  function startCellEdit(
+    rowId: string | number,
+    dataIndex: string,
+    record: Record<string, unknown>
+  ): void {
     // 如果正在编辑同一个单元格，不做处理
-    if (editingCell.value &&
+    if (
+      editingCell.value &&
       editingCell.value.rowId === rowId &&
-      editingCell.value.dataIndex === dataIndex) {
+      editingCell.value.dataIndex === dataIndex
+    ) {
       return
     }
 
@@ -153,7 +159,7 @@ export function useEditable(options: {
           rowId,
           dataIndex,
           value: newValue,
-          record
+          record,
         })
 
         if (success) {
@@ -183,10 +189,10 @@ export function useEditable(options: {
 
   // ---- Row 模式 ----
 
-  function startRowEdit(rowId: string | number, record: any): void {
+  function startRowEdit(rowId: string | number, record: Record<string, unknown>): void {
     // 深拷贝整行原始值
-    const cloned: Record<string, any> = {}
-    Object.keys(record).forEach(key => {
+    const cloned: Record<string, unknown> = {}
+    Object.keys(record).forEach((key) => {
       cloned[key] = record[key]
     })
     originalValues.set(rowId, cloned)
@@ -207,9 +213,9 @@ export function useEditable(options: {
     }
 
     // 计算变更字段
-    const changedValues: Record<string, any> = {}
+    const changedValues: Record<string, unknown> = {}
     let hasChanged = false
-    Object.keys(values).forEach(key => {
+    Object.keys(values).forEach((key) => {
       if (values[key] !== original[key]) {
         changedValues[key] = values[key]
         hasChanged = true
@@ -228,7 +234,7 @@ export function useEditable(options: {
         const success = await onSave({
           rowId,
           values: changedValues,
-          record: original
+          record: original,
         })
 
         if (success) {
@@ -263,7 +269,7 @@ export function useEditable(options: {
     cancelCellEdit,
     startRowEdit,
     saveRowEdit,
-    cancelRowEdit
+    cancelRowEdit,
   }
 
   return {
@@ -278,6 +284,6 @@ export function useEditable(options: {
     startRowEdit,
     saveRowEdit,
     cancelRowEdit,
-    editableContext
+    editableContext,
   }
 }

@@ -7,7 +7,7 @@ export function useTableState(initialState?: Partial<TableState>) {
     pageSize: 20,
     sorter: null,
     filters: {},
-    ...initialState
+    ...initialState,
   })
 
   // 更新状态（支持部分更新）
@@ -24,12 +24,12 @@ export function useTableState(initialState?: Partial<TableState>) {
   }
 
   // 获取请求参数
-  const getRequestParams = (extraParams?: Record<string, any>) => {
-    const params: Record<string, any> = {
+  const getRequestParams = (extraParams?: Record<string, unknown>) => {
+    const params: Record<string, unknown> = {
       current: state.current,
       pageSize: state.pageSize,
       ...state.filters,
-      ...extraParams
+      ...extraParams,
     }
 
     if (state.sorter) {
@@ -45,6 +45,6 @@ export function useTableState(initialState?: Partial<TableState>) {
     setTableState,
     resetTableState,
     getRequestParams,
-    ...toRefs(state)
+    ...toRefs(state),
   }
 }

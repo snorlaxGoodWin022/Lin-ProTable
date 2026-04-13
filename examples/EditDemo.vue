@@ -43,7 +43,12 @@
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import ProTable from '../src/components/ProTable/ProTable.vue'
-import type { ColumnProps, RequestParams, TableData, EditSaveParams } from '../src/components/ProTable/types'
+import type {
+  ColumnProps,
+  RequestParams,
+  TableData,
+  EditSaveParams,
+} from '../src/components/ProTable/types'
 
 // ---- 单元格编辑列配置 ----
 const cellEditColumns: ColumnProps[] = [
@@ -51,7 +56,7 @@ const cellEditColumns: ColumnProps[] = [
     dataIndex: 'id',
     title: 'ID',
     width: 80,
-    sorter: true
+    sorter: true,
   },
   {
     dataIndex: 'name',
@@ -59,8 +64,8 @@ const cellEditColumns: ColumnProps[] = [
     width: 150,
     editable: {
       type: 'input',
-      placeholder: '请输入姓名'
-    }
+      placeholder: '请输入姓名',
+    },
   },
   {
     dataIndex: 'age',
@@ -68,8 +73,8 @@ const cellEditColumns: ColumnProps[] = [
     width: 120,
     editable: {
       type: 'number',
-      props: { min: 0, max: 150 }
-    }
+      props: { min: 0, max: 150 },
+    },
   },
   {
     dataIndex: 'email',
@@ -77,8 +82,8 @@ const cellEditColumns: ColumnProps[] = [
     width: 220,
     editable: {
       type: 'input',
-      placeholder: '请输入邮箱'
-    }
+      placeholder: '请输入邮箱',
+    },
   },
   {
     dataIndex: 'status',
@@ -87,24 +92,24 @@ const cellEditColumns: ColumnProps[] = [
     valueType: 'enum',
     valueEnum: {
       active: { text: '活跃', status: 'success' },
-      inactive: { text: '禁用', status: 'info' }
+      inactive: { text: '禁用', status: 'info' },
     },
     editable: {
       type: 'select',
       options: [
         { label: '活跃', value: 'active' },
-        { label: '禁用', value: 'inactive' }
+        { label: '禁用', value: 'inactive' },
       ],
-      placeholder: '选择状态'
-    }
+      placeholder: '选择状态',
+    },
   },
   {
     dataIndex: 'createdAt',
     title: '创建时间',
     width: 180,
     valueType: 'dateTime',
-    sorter: true
-  }
+    sorter: true,
+  },
 ]
 
 // ---- 整行编辑列配置 ----
@@ -112,7 +117,7 @@ const rowEditColumns: ColumnProps[] = [
   {
     dataIndex: 'id',
     title: 'ID',
-    width: 80
+    width: 80,
   },
   {
     dataIndex: 'name',
@@ -120,8 +125,8 @@ const rowEditColumns: ColumnProps[] = [
     width: 150,
     editable: {
       type: 'input',
-      placeholder: '请输入姓名'
-    }
+      placeholder: '请输入姓名',
+    },
   },
   {
     dataIndex: 'age',
@@ -129,8 +134,8 @@ const rowEditColumns: ColumnProps[] = [
     width: 120,
     editable: {
       type: 'number',
-      props: { min: 0, max: 150 }
-    }
+      props: { min: 0, max: 150 },
+    },
   },
   {
     dataIndex: 'email',
@@ -138,8 +143,8 @@ const rowEditColumns: ColumnProps[] = [
     width: 220,
     editable: {
       type: 'input',
-      placeholder: '请输入邮箱'
-    }
+      placeholder: '请输入邮箱',
+    },
   },
   {
     dataIndex: 'status',
@@ -148,29 +153,29 @@ const rowEditColumns: ColumnProps[] = [
     valueType: 'enum',
     valueEnum: {
       active: { text: '活跃', status: 'success' },
-      inactive: { text: '禁用', status: 'info' }
+      inactive: { text: '禁用', status: 'info' },
     },
     editable: {
       type: 'select',
       options: [
         { label: '活跃', value: 'active' },
-        { label: '禁用', value: 'inactive' }
+        { label: '禁用', value: 'inactive' },
       ],
-      placeholder: '选择状态'
-    }
+      placeholder: '选择状态',
+    },
   },
   {
     dataIndex: 'createdAt',
     title: '创建时间',
     width: 180,
-    valueType: 'dateTime'
+    valueType: 'dateTime',
   },
   {
     dataIndex: 'action',
     title: '操作',
     width: 220,
-    fixed: 'right'
-  }
+    fixed: 'right',
+  },
 ]
 
 // ---- 模拟数据 ----
@@ -181,13 +186,13 @@ const mockData = ref(
     age: Math.floor(Math.random() * 50) + 18,
     email: `user${i + 1}@example.com`,
     status: Math.random() > 0.5 ? 'active' : 'inactive',
-    createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString()
+    createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
   }))
 )
 
 // 数据请求函数
 async function fetchData(params: RequestParams): Promise<TableData> {
-  await new Promise(resolve => setTimeout(resolve, 200))
+  await new Promise((resolve) => setTimeout(resolve, 200))
 
   let filteredData = [...mockData.value]
 
@@ -212,7 +217,7 @@ async function fetchData(params: RequestParams): Promise<TableData> {
   return {
     data: pageData,
     total: filteredData.length,
-    success: true
+    success: true,
   }
 }
 
@@ -222,10 +227,10 @@ async function fetchData(params: RequestParams): Promise<TableData> {
 async function handleCellSave(params: EditSaveParams): Promise<boolean> {
   console.log('单元格保存:', params)
   // 模拟接口调用
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
   // 模拟更新本地数据
-  const index = mockData.value.findIndex(item => item.id === params.rowId)
+  const index = mockData.value.findIndex((item) => item.id === params.rowId)
   if (index !== -1 && params.dataIndex && params.value !== undefined) {
     mockData.value[index][params.dataIndex] = params.value
   }
@@ -238,11 +243,11 @@ async function handleCellSave(params: EditSaveParams): Promise<boolean> {
 async function handleRowSave(params: EditSaveParams): Promise<boolean> {
   console.log('整行保存:', params)
   // 模拟接口调用
-  await new Promise(resolve => setTimeout(resolve, 500))
+  await new Promise((resolve) => setTimeout(resolve, 500))
 
   // 模拟更新本地数据
   if (params.values) {
-    const index = mockData.value.findIndex(item => item.id === params.rowId)
+    const index = mockData.value.findIndex((item) => item.id === params.rowId)
     if (index !== -1) {
       Object.assign(mockData.value[index], params.values)
     }
@@ -253,8 +258,8 @@ async function handleRowSave(params: EditSaveParams): Promise<boolean> {
 }
 
 // 删除
-function handleDelete(row: any) {
-  const index = mockData.value.findIndex(item => item.id === row.id)
+function handleDelete(row: Record<string, unknown>) {
+  const index = mockData.value.findIndex((item) => item.id === row.id)
   if (index !== -1) {
     mockData.value.splice(index, 1)
     ElMessage.success(`已删除: ${row.name}`)

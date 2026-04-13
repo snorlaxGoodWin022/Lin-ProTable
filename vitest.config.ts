@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src')
-    }
+      '@': resolve(__dirname, 'src'),
+    },
   },
   test: {
     environment: 'jsdom',
@@ -16,12 +16,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'examples/',
-        '**/*.d.ts',
-        '**/types/*'
-      ]
-    }
-  }
+      exclude: ['node_modules/', 'examples/', '**/*.d.ts', '**/types/*'],
+    },
+  },
 })

@@ -52,12 +52,7 @@
       @keyup.escape="handleCancel"
       @blur="handleBlur"
     >
-      <el-option
-        v-for="opt in options"
-        :key="opt.value"
-        :label="opt.label"
-        :value="opt.value"
-      />
+      <el-option v-for="opt in options" :key="opt.value" :label="opt.label" :value="opt.value" />
     </el-select>
 
     <!-- 日期选择 -->
@@ -83,19 +78,20 @@ import type { ColumnProps, EditableContext } from './types'
 
 interface Props {
   column: ColumnProps
-  value: any
+  value: unknown
   rowId: string | number
   mode: 'cell' | 'row'
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
-  (e: 'save', rowId: string | number, dataIndex: string, value: any): void
+  (e: 'save', rowId: string | number, dataIndex: string, value: unknown): void
   (e: 'cancel'): void
 }>()
 
 const editableContext = inject<EditableContext>('editableContext')
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Element Plus 组件 ref 需要灵活类型
 const inputRef = ref<any>(null)
 
 // 解析编辑配置

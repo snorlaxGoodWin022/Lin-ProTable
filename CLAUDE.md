@@ -15,6 +15,7 @@ npm run test:coverage # 运行测试并生成覆盖率报告
 ```
 
 运行单个测试文件：
+
 ```bash
 npx vitest run path/to/test.spec.ts
 ```
@@ -43,15 +44,15 @@ columns (配置) + request (请求函数)
 
 ### 关键文件
 
-| 文件 | 职责 |
-|------|------|
-| `ProTable.vue` | 主协调器 - 协调 hooks，处理数据请求 |
-| `VirtualTable.vue` | 自定义虚拟滚动实现，支持万级数据 |
-| `hooks/useTableState.ts` | 管理 `TableState`: current, pageSize, sorter, filters |
-| `hooks/useColumnState.ts` | 管理 `ColumnState`: order[], visible{} |
-| `hooks/useUrlSync.ts` | URL 双向同步，filters 使用 Base64 编码 |
-| `types/index.ts` | 所有 TypeScript 类型定义 |
-| `utils/export.ts` | Excel/CSV 导出 (使用 xlsx 库) |
+| 文件                      | 职责                                                  |
+| ------------------------- | ----------------------------------------------------- |
+| `ProTable.vue`            | 主协调器 - 协调 hooks，处理数据请求                   |
+| `VirtualTable.vue`        | 自定义虚拟滚动实现，支持万级数据                      |
+| `hooks/useTableState.ts`  | 管理 `TableState`: current, pageSize, sorter, filters |
+| `hooks/useColumnState.ts` | 管理 `ColumnState`: order[], visible{}                |
+| `hooks/useUrlSync.ts`     | URL 双向同步，filters 使用 Base64 编码                |
+| `types/index.ts`          | 所有 TypeScript 类型定义                              |
+| `utils/export.ts`         | Excel/CSV 导出 (使用 xlsx 库)                         |
 
 ### Hook 模式
 
@@ -62,12 +63,14 @@ Hooks 是纯组合式函数，返回状态和设置方法：
 const { tableState, setTableState, resetTableState } = useTableState(initialState)
 
 // useColumnState 模式
-const { columnState, processedColumns, updateColumnVisibility, updateColumnOrder } = useColumnState(columns)
+const { columnState, processedColumns, updateColumnVisibility, updateColumnOrder } =
+  useColumnState(columns)
 ```
 
 ### 值类型 (valueType)
 
 列配置支持 `valueType` 自动格式化：
+
 - `text` - 默认文本
 - `date` / `dateTime` - 日期格式化
 - `money` - 货币格式 (¥ 前缀)
@@ -94,10 +97,10 @@ async function request(params: RequestParams): Promise<TableData> {
 
 ```typescript
 defineExpose({
-  refresh,         // 重新请求数据
-  getTableData,    // 获取当前数据
-  getTableState,   // 获取 TableState 对象
-  resetTableState  // 重置为初始状态
+  refresh, // 重新请求数据
+  getTableData, // 获取当前数据
+  getTableState, // 获取 TableState 对象
+  resetTableState, // 重置为初始状态
 })
 ```
 

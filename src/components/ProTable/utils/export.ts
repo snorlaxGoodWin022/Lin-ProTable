@@ -6,19 +6,19 @@ import type { ColumnProps, ExportOptions } from '../types'
  */
 export function exportToExcel(
   columns: ColumnProps[],
-  data: any[],
+  data: Record<string, unknown>[],
   filename: string = 'export.xlsx',
   options: ExportOptions = {}
 ): void {
   // 过滤隐藏列
-  const exportColumns = columns.filter(col => !col.hideInExport)
+  const exportColumns = columns.filter((col) => !col.hideInExport)
 
   // 构建表头
-  const headers = exportColumns.map(col => col.title)
+  const headers = exportColumns.map((col) => col.title)
 
   // 构建数据行
-  const rows = data.map(record => {
-    return exportColumns.map(col => {
+  const rows = data.map((record) => {
+    return exportColumns.map((col) => {
       let value = record[col.dataIndex]
 
       // 使用自定义渲染或格式化函数
@@ -30,7 +30,7 @@ export function exportToExcel(
         value = formatValueByType(value, col.valueType, col.valueEnum)
       }
 
-      return value
+      return value ?? ''
     })
   })
 
@@ -38,8 +38,8 @@ export function exportToExcel(
   const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows])
 
   // 设置列宽
-  const colWidths = exportColumns.map(col => ({
-    wch: col.width ? Math.min(Math.max(col.width / 7, 10), 50) : 15
+  const colWidths = exportColumns.map((col) => ({
+    wch: col.width ? Math.min(Math.max(col.width / 7, 10), 50) : 15,
   }))
   worksheet['!cols'] = colWidths
 
@@ -57,8 +57,8 @@ export function exportToExcel(
         top: { style: 'thin' },
         bottom: { style: 'thin' },
         left: { style: 'thin' },
-        right: { style: 'thin' }
-      }
+        right: { style: 'thin' },
+      },
     }
   }
 
@@ -71,10 +71,14 @@ export function exportToExcel(
       const column = exportColumns[col]
 
       // 数字列右对齐
-      if (column.valueType === 'digit' || column.valueType === 'money' || column.valueType === 'percent') {
+      if (
+        column.valueType === 'digit' ||
+        column.valueType === 'money' ||
+        column.valueType === 'percent'
+      ) {
         worksheet[cellAddress].s = {
           ...worksheet[cellAddress].s,
-          alignment: { horizontal: 'right' }
+          alignment: { horizontal: 'right' },
         }
       }
     }
@@ -93,21 +97,21 @@ export function exportToExcel(
  */
 export function exportToCsv(
   columns: ColumnProps[],
-  data: any[],
+  data: Record<string, unknown>[],
   filename: string = 'export.csv'
 ): void {
-  const exportColumns = columns.filter(col => !col.hideInExport)
+  const exportColumns = columns.filter((col) => !col.hideInExport)
 
   // 构建 CSV 行
   const rows = []
 
   // 表头行
-  const headerRow = exportColumns.map(col => escapeCsvValue(col.title))
+  const headerRow = exportColumns.map((col) => escapeCsvValue(col.title))
   rows.push(headerRow.join(','))
 
   // 数据行
-  data.forEach(record => {
-    const dataRow = exportColumns.map(col => {
+  data.forEach((record) => {
+    const dataRow = exportColumns.map((col) => {
       let value = record[col.dataIndex]
 
       if (col.customRender) {
@@ -141,6 +145,7 @@ export function exportToCsv(
 /**
  * 从 VNode 或渲染结果提取纯文本
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- VNode 结构为动态类型，无法精确定义
 function extractText(renderResult: any): string {
   if (renderResult == null) return ''
 
@@ -182,10 +187,10 @@ function extractText(renderResult: any): string {
  * 根据类型格式化值
  */
 function formatValueByType(
-  value: any,
+  value: unknown,
   valueType: string,
-  valueEnum?: Record<string, any>,
-  forCsv: boolean = false
+  valueEnum?: Record<string, unknown>,
+  _forCsv: boolean = false
 ): string {
   if (value == null) return ''
 
@@ -199,17 +204,18 @@ function formatValueByType(
     case 'money':
       return `¥${Number(value).toLocaleString('zh-CN', {
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       })}`
 
     case 'percent':
       return `${(Number(value) * 100).toFixed(2)}%`
 
-    case 'enum':
-      if (valueEnum && valueEnum[value]) {
-        return valueEnum[value].text || String(value)
-      }
+    case 'enum': {
+      const enumKey = String(value)
+      const enumItem = valueEnum?.[enumKey] as { text?: string } | undefined
+      if (enumItem?.text) return enumItem.text
       return String(value)
+    }
 
     case 'digit':
       return Number(value).toLocaleString('zh-CN')
@@ -222,7 +228,7 @@ function formatValueByType(
 /**
  * 转义 CSV 值
  */
-function escapeCsvValue(value: any): string {
+function escapeCsvValue(value: unknown): string {
   if (value == null) return ''
 
   const stringValue = String(value)

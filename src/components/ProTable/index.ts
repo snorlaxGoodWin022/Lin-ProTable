@@ -28,18 +28,11 @@ export type {
   ExportOptions,
   EditConfig,
   EditSaveParams,
-  EditableContext
+  EditableContext,
 } from './types'
 
 // 默认导出
 export default ProTable
 
 // 命名导出
-export {
-  ProTable,
-  ProTableToolbar,
-  ProVirtualTable,
-  ColumnSetting,
-  ColumnRenderer,
-  EditCell
-}
+export { ProTable, ProTableToolbar, ProVirtualTable, ColumnSetting, ColumnRenderer, EditCell }

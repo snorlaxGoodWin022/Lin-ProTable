@@ -26,7 +26,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       current: 3,
       pageSize: 50,
       sorter: { field: 'name', order: 'ascend' },
-      filters: { status: ['active'], category: ['tech'] }
+      filters: { status: ['active'], category: ['tech'] },
     }
 
     // 执行
@@ -62,7 +62,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       current: 1,
       pageSize: 20,
       sorter: null,
-      filters: {}
+      filters: {},
     })
 
     // 执行：批量更新多个属性
@@ -70,7 +70,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       current: 5,
       pageSize: 100,
       sorter: { field: 'createdAt', order: 'ascend' },
-      filters: { department: ['engineering', 'product'] }
+      filters: { department: ['engineering', 'product'] },
     })
 
     // 验证
@@ -82,11 +82,11 @@ describe('useTableState - 配置化表格状态管理', () => {
 
   test('应该支持重置状态', () => {
     // 准备
-    const { setTableState, resetTableState, tableState } = useTableState({
+    const { resetTableState, tableState } = useTableState({
       current: 10,
       pageSize: 100,
       sorter: { field: 'name', order: 'descend' },
-      filters: { status: ['inactive'], type: ['premium'] }
+      filters: { status: ['inactive'], type: ['premium'] },
     })
 
     // 验证初始状态不是默认值
@@ -113,7 +113,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       current: 3,
       pageSize: 25,
       sorter: { field: 'age', order: 'descend' },
-      filters: { status: ['active', 'pending'], category: ['user'] }
+      filters: { status: ['active', 'pending'], category: ['user'] },
     })
 
     // 执行
@@ -127,7 +127,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       category: ['user'],
       sortField: 'age',
       sortOrder: 'descend',
-      extra: 'param'
+      extra: 'param',
     })
   })
 
@@ -137,7 +137,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       current: 1,
       pageSize: 20,
       sorter: null,
-      filters: {}
+      filters: {},
     })
 
     // 执行
@@ -146,7 +146,7 @@ describe('useTableState - 配置化表格状态管理', () => {
     // 验证：没有排序器时不应包含排序字段
     expect(params).toEqual({
       current: 1,
-      pageSize: 20
+      pageSize: 20,
     })
     expect(params.sortField).toBeUndefined()
     expect(params.sortOrder).toBeUndefined()
@@ -158,7 +158,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       current: 2,
       pageSize: 30,
       sorter: { field: 'name', order: 'ascend' },
-      filters: {}
+      filters: {},
     })
 
     // 执行
@@ -169,7 +169,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       current: 2,
       pageSize: 30,
       sortField: 'name',
-      sortOrder: 'ascend'
+      sortOrder: 'ascend',
     })
     expect(params.status).toBeUndefined()
     expect(params.category).toBeUndefined()
@@ -179,14 +179,14 @@ describe('useTableState - 配置化表格状态管理', () => {
     // 准备
     const { getRequestParams } = useTableState({
       current: 1,
-      pageSize: 10
+      pageSize: 10,
     })
 
     // 执行：传递额外参数
     const params = getRequestParams({
       keyword: '搜索词',
       dateRange: ['2024-01-01', '2024-01-31'],
-      includeArchived: false
+      includeArchived: false,
     })
 
     // 验证
@@ -195,7 +195,7 @@ describe('useTableState - 配置化表格状态管理', () => {
       pageSize: 10,
       keyword: '搜索词',
       dateRange: ['2024-01-01', '2024-01-31'],
-      includeArchived: false
+      includeArchived: false,
     })
   })
 
@@ -205,13 +205,13 @@ describe('useTableState - 配置化表格状态管理', () => {
     setTableState({
       current: 2,
       pageSize: 20,
-      filters: { status: ['active'] }
+      filters: { status: ['active'] },
     })
 
     // 执行：额外参数中包含相同键
     const params = getRequestParams({
       current: 5, // 覆盖状态中的 current
-      extraField: 'extraValue'
+      extraField: 'extraValue',
     })
 
     // 验证：额外参数优先级更高

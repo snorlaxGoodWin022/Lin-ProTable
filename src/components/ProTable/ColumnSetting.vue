@@ -6,12 +6,7 @@
     </div>
 
     <div class="column-setting-body">
-      <draggable
-        v-model="localOrder"
-        item-key="key"
-        handle=".drag-handle"
-        @end="handleDragEnd"
-      >
+      <draggable v-model="localOrder" item-key="key" handle=".drag-handle" @end="handleDragEnd">
         <template #item="{ element }">
           <div class="column-item">
             <el-icon class="drag-handle"><Menu /></el-icon>
@@ -52,7 +47,7 @@ const emit = defineEmits<{
 }>()
 
 defineExpose({
-  applyChanges
+  applyChanges,
 })
 
 // 本地状态
@@ -72,7 +67,7 @@ watch(
 
 // 获取列标题
 function getColumnTitle(dataIndex: string) {
-  const column = props.columns.find(col => col.dataIndex === dataIndex)
+  const column = props.columns.find((col) => col.dataIndex === dataIndex)
   return column?.title || dataIndex
 }
 
@@ -82,7 +77,7 @@ function handleVisibleChange(dataIndex: string, visible: boolean) {
   // 创建新对象以确保响应式更新
   localVisible.value = {
     ...localVisible.value,
-    [dataIndex]: visible
+    [dataIndex]: visible,
   }
   console.log('after update:', localVisible.value[dataIndex])
 }
@@ -94,17 +89,20 @@ function handleDragEnd() {
 
 // 重置列
 function resetColumns() {
-  localOrder.value = props.columns.map(col => col.dataIndex)
-  localVisible.value = props.columns.reduce((acc, col) => {
-    acc[col.dataIndex] = !col.hideInTable
-    return acc
-  }, {} as Record<string, boolean>)
+  localOrder.value = props.columns.map((col) => col.dataIndex)
+  localVisible.value = props.columns.reduce(
+    (acc, col) => {
+      acc[col.dataIndex] = !col.hideInTable
+      return acc
+    },
+    {} as Record<string, boolean>
+  )
 }
 
 // 全选
 function selectAll() {
   const newVisible = { ...localVisible.value }
-  localOrder.value.forEach(dataIndex => {
+  localOrder.value.forEach((dataIndex) => {
     newVisible[dataIndex] = true
   })
   localVisible.value = newVisible
@@ -113,7 +111,7 @@ function selectAll() {
 // 全不选
 function unselectAll() {
   const newVisible = { ...localVisible.value }
-  localOrder.value.forEach(dataIndex => {
+  localOrder.value.forEach((dataIndex) => {
     newVisible[dataIndex] = false
   })
   localVisible.value = newVisible
@@ -123,7 +121,7 @@ function unselectAll() {
 function applyChanges() {
   emit('update:column-state', {
     order: localOrder.value,
-    visible: localVisible.value
+    visible: localVisible.value,
   })
 }
 </script>
