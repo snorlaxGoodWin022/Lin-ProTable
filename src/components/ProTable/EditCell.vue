@@ -24,6 +24,7 @@
       :rows="2"
       v-bind="editProps"
       @keyup.escape="handleCancel"
+      @blur="handleBlur"
     />
 
     <!-- 数字输入 -->
@@ -73,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, inject } from 'vue'
+import { ref, computed, nextTick, onMounted, inject, watch } from 'vue'
 import type { ColumnProps, EditableContext } from './types'
 
 interface Props {
@@ -113,6 +114,13 @@ const placeholder = computed(() => {
 // 当前编辑值
 const currentValue = ref(props.value)
 
+// row/batch 模式下，实时同步值到编辑缓存（避免 el-input-number 等组件的事件时序问题）
+watch(currentValue, (newVal) => {
+  if (props.mode !== 'cell') {
+    editableContext?.updateEditingValue(props.rowId, props.column.dataIndex, newVal)
+  }
+})
+
 // 自动聚焦
 onMounted(() => {
   nextTick(() => {
@@ -141,16 +149,19 @@ function handleCancel() {
   emit('cancel')
 }
 
-// blur 处理 (cell 模式自动保存)
+// blur 处理
 function handleBlur() {
   if (props.mode === 'cell') {
-    // 延迟保存，避免点击其他操作时立即触发
+    // cell 模式：延迟保存，避免点击其他操作时立即触发
     setTimeout(() => {
       if (editableContext?.isEditing(props.rowId, props.column.dataIndex)) {
         editableContext.updateEditingValue(props.rowId, props.column.dataIndex, currentValue.value)
         editableContext.saveCellEdit()
       }
     }, 150)
+  } else {
+    // row/batch 模式：仅将当前值同步到编辑缓存
+    editableContext?.updateEditingValue(props.rowId, props.column.dataIndex, currentValue.value)
   }
 }
 </script>

@@ -54,6 +54,7 @@ const navItems = [
   { path: '/basic', icon: '📊', label: '基础表格' },
   { path: '/edit', icon: '✏️', label: '行内编辑' },
   { path: '/row-selection', icon: '☑️', label: '行选择' },
+  { path: '/batch-edit', icon: '📝', label: '批量编辑' },
   { path: '/url-sync', icon: '🔗', label: 'URL 同步' },
   { path: '/large-data', icon: '🚀', label: '大数据' },
   { path: '/export', icon: '📥', label: '导出功能' },

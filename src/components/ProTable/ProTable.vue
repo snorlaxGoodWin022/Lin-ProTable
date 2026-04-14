@@ -12,6 +12,23 @@
     >
       <!-- 透传工具栏插槽 -->
       <template #toolbar-left>
+        <!-- batch 模式按钮组 -->
+        <template v-if="editMode === 'batch'">
+          <el-space>
+            <el-button
+              v-if="!isBatchEditing"
+              type="primary"
+              :disabled="selectedRowKeys.length === 0"
+              @click="handleBatchStartEdit"
+            >
+              批量编辑 ({{ selectedRowKeys.length }})
+            </el-button>
+            <template v-else>
+              <el-button type="success" @click="handleBatchSave">批量保存</el-button>
+              <el-button @click="handleBatchCancel">取消</el-button>
+            </template>
+          </el-space>
+        </template>
         <slot name="toolbar-left" />
       </template>
       <template #toolbar-right>
@@ -91,12 +108,19 @@
           >
             <template #default="scope">
               <template v-if="editingRowKeys.has(getRowKeyValue(scope.row))">
-                <el-space>
-                  <el-button size="small" type="primary" @click="handleRowSave(scope.row)"
-                    >保存</el-button
-                  >
-                  <el-button size="small" @click="handleRowCancel(scope.row)">取消</el-button>
-                </el-space>
+                <!-- row 模式：显示保存/取消 -->
+                <template v-if="editMode === 'row'">
+                  <el-space>
+                    <el-button size="small" type="primary" @click="handleRowSave(scope.row)"
+                      >保存</el-button
+                    >
+                    <el-button size="small" @click="handleRowCancel(scope.row)">取消</el-button>
+                  </el-space>
+                </template>
+                <!-- batch 模式：编辑中提示 -->
+                <template v-else>
+                  <span style="color: #e6a23c; font-size: 12px">编辑中...</span>
+                </template>
               </template>
               <template v-else>
                 <slot
@@ -107,7 +131,11 @@
                   :value="scope.row[column.dataIndex]"
                 />
                 <el-space v-else>
-                  <el-button size="small" type="primary" @click="handleRowEdit(scope.row)"
+                  <el-button
+                    v-if="editMode === 'row'"
+                    size="small"
+                    type="primary"
+                    @click="handleRowEdit(scope.row)"
                     >编辑</el-button
                   >
                   <slot name="action-extra" :row="scope.row" :index="scope.$index" />
@@ -138,7 +166,7 @@
                   :column="column"
                   :value="getCellValue(scope.row, column)"
                   :row-id="getRowKeyValue(scope.row)"
-                  :mode="editMode === 'row' ? 'row' : 'cell'"
+                  :mode="editMode === 'cell' ? 'cell' : 'row'"
                 />
               </template>
               <!-- cell 模式：可点击进入编辑 -->
@@ -285,10 +313,14 @@ const {
   startRowEdit,
   saveRowEdit,
   cancelRowEdit,
+  startBatchEdit,
+  saveBatchEdit,
+  cancelBatchEdit,
   editableContext,
 } = useEditable({
   editMode: editModeRef,
   onSave: props.onSave,
+  onBatchSave: props.onBatchSave,
   getRecordByKey,
   dataSource,
   rowKey: props.rowKey,
@@ -335,7 +367,7 @@ function getCellValue(row: Record<string, unknown>, column: ColumnProps): unknow
 
 // 判断是否是编辑模式下的操作列
 function isEditModeColumn(column: ColumnProps): boolean {
-  return props.editMode === 'row' && column.dataIndex === 'action'
+  return (props.editMode === 'row' || props.editMode === 'batch') && column.dataIndex === 'action'
 }
 
 // 行编辑：点击编辑
@@ -362,6 +394,35 @@ function handleCellClick(row: Record<string, unknown>, column: ColumnProps) {
   if (props.editMode !== 'cell' || !column.editable) return
   const rowId = getRowKeyValue(row)
   startCellEdit(rowId, column.dataIndex, row)
+}
+
+// ---- Batch 编辑 ----
+
+// 是否处于 batch 编辑状态
+const isBatchEditing = computed(() => {
+  return props.editMode === 'batch' && editingRowKeys.size > 0
+})
+
+// 开始批量编辑
+function handleBatchStartEdit() {
+  if (selectedRowKeys.value.length === 0) {
+    ElMessage.warning('请先选择要编辑的行')
+    return
+  }
+  const records = selectedRowKeys.value
+    .map((key) => getRecordByKey(key))
+    .filter((r): r is Record<string, unknown> => r !== undefined)
+  startBatchEdit(selectedRowKeys.value, records)
+}
+
+// 批量保存
+async function handleBatchSave() {
+  await saveBatchEdit()
+}
+
+// 批量取消
+function handleBatchCancel() {
+  cancelBatchEdit()
 }
 
 // 分页配置
@@ -550,6 +611,9 @@ defineExpose({
   startRowEdit,
   saveRowEdit,
   cancelRowEdit,
+  startBatchEdit,
+  saveBatchEdit,
+  cancelBatchEdit,
   getSelectedRowKeys: () => selectedRowKeys.value,
   getSelectedRows: () => selectedRows.value,
   clearSelection,

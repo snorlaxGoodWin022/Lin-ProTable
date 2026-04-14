@@ -80,6 +80,13 @@ export interface EditSaveParams {
   dataIndex?: string // cell 模式：当前编辑的字段名
   value?: unknown // cell 模式：当前编辑的新值
   values?: Record<string, unknown> // row 模式：整行所有修改字段
+  // batch 模式
+  batch?: boolean
+  rows?: Array<{
+    rowId: string | number
+    record: Record<string, unknown>
+    values: Record<string, unknown>
+  }>
 }
 
 // 编辑上下文 (provide/inject)
@@ -98,6 +105,9 @@ export interface EditableContext {
   startRowEdit: (rowId: string | number, record: Record<string, unknown>) => void
   saveRowEdit: (rowId: string | number) => Promise<void>
   cancelRowEdit: (rowId: string | number) => void
+  startBatchEdit: (rowIds: Array<string | number>, records: Array<Record<string, unknown>>) => void
+  saveBatchEdit: () => Promise<void>
+  cancelBatchEdit: () => void
 }
 
 // 表格状态
@@ -183,6 +193,9 @@ export interface ProTableProps {
 
   // 编辑保存回调 (返回 true 表示成功更新本地数据，false 表示失败回滚)
   onSave?: (params: EditSaveParams) => Promise<boolean>
+
+  // 批量编辑保存回调（batch 模式专用）
+  onBatchSave?: (params: EditSaveParams) => Promise<boolean>
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 原生 el-table 属性透传
   [key: string]: any

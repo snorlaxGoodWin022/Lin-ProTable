@@ -12,6 +12,7 @@ import LargeDataPage from '../examples/pages/LargeDataPage.vue'
 import ExportPage from '../examples/pages/ExportPage.vue'
 import ColumnSettingPage from '../examples/pages/ColumnSettingPage.vue'
 import RowSelectionPage from '../examples/pages/RowSelectionPage.vue'
+import BatchEditPage from '../examples/pages/BatchEditPage.vue'
 
 // 创建路由
 const router = createRouter({
@@ -29,6 +30,7 @@ const router = createRouter({
         { path: 'export', component: ExportPage },
         { path: 'column-setting', component: ColumnSettingPage },
         { path: 'row-selection', component: RowSelectionPage },
+        { path: 'batch-edit', component: BatchEditPage },
       ],
     },
   ],

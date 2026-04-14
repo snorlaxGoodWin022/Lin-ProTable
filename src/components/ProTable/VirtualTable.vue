@@ -97,7 +97,9 @@
                       :column="column"
                       :value="getCellValue(row, column)"
                       :row-id="getRowKey(row)"
-                      mode="cell"
+                      :mode="
+                        editableContext && editableContext.editMode === 'cell' ? 'cell' : 'row'
+                      "
                     />
                   </template>
                   <!-- cell 模式可点击编辑 -->
