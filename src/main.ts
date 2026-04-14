@@ -4,20 +4,31 @@ import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import 'element-plus/dist/index.css'
 import App from './App.vue'
-import BasicUsage from '../examples/BasicUsage.vue'
-import UrlSyncDemo from '../examples/UrlSyncDemo.vue'
-import LargeDataDemo from '../examples/LargeDataDemo.vue'
-import EditDemo from '../examples/EditDemo.vue'
+import DemoLayout from '../examples/layouts/DemoLayout.vue'
+import BasicTablePage from '../examples/pages/BasicTablePage.vue'
+import EditTablePage from '../examples/pages/EditTablePage.vue'
+import UrlSyncPage from '../examples/pages/UrlSyncPage.vue'
+import LargeDataPage from '../examples/pages/LargeDataPage.vue'
+import ExportPage from '../examples/pages/ExportPage.vue'
+import ColumnSettingPage from '../examples/pages/ColumnSettingPage.vue'
 
 // 创建路由
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', redirect: '/basic' },
-    { path: '/basic', component: BasicUsage },
-    { path: '/url-sync', component: UrlSyncDemo },
-    { path: '/large-data', component: LargeDataDemo },
-    { path: '/edit', component: EditDemo },
+    {
+      path: '/',
+      component: DemoLayout,
+      children: [
+        { path: '', redirect: '/basic' },
+        { path: 'basic', component: BasicTablePage },
+        { path: 'edit', component: EditTablePage },
+        { path: 'url-sync', component: UrlSyncPage },
+        { path: 'large-data', component: LargeDataPage },
+        { path: 'export', component: ExportPage },
+        { path: 'column-setting', component: ColumnSettingPage },
+      ],
+    },
   ],
 })
 
