@@ -11,6 +11,7 @@ import UrlSyncPage from '../examples/pages/UrlSyncPage.vue'
 import LargeDataPage from '../examples/pages/LargeDataPage.vue'
 import ExportPage from '../examples/pages/ExportPage.vue'
 import ColumnSettingPage from '../examples/pages/ColumnSettingPage.vue'
+import RowSelectionPage from '../examples/pages/RowSelectionPage.vue'
 
 // 创建路由
 const router = createRouter({
@@ -27,6 +28,7 @@ const router = createRouter({
         { path: 'large-data', component: LargeDataPage },
         { path: 'export', component: ExportPage },
         { path: 'column-setting', component: ColumnSettingPage },
+        { path: 'row-selection', component: RowSelectionPage },
       ],
     },
   ],

@@ -27,7 +27,13 @@
         :loading="loading"
         :row-key="rowKey"
         :estimated-row-height="virtualScroll.estimatedRowHeight"
+        :row-selection="selectionConfig"
+        :selected-row-keys="selectedRowKeys"
+        :is-all-selected="isAllSelected"
+        :is-indeterminate="isIndeterminate"
         @row-click="handleRowClick"
+        @select="handleVirtualSelect"
+        @select-all="toggleAll"
       >
         <!-- 透传所有表格插槽 -->
         <template v-for="(_, name) in $slots" #[name]="slotData">
@@ -37,13 +43,43 @@
     </template>
     <template v-else>
       <el-table
+        ref="elTableRef"
         v-bind="$attrs"
         :data="dataSource"
         :row-key="rowKey"
         :loading="loading"
+        :row-class-name="getRowClassName"
         @sort-change="handleSortChange"
         @filter-change="handleFilterChange"
+        @selection-change="handleSelectionChange"
       >
+        <!-- checkbox 多选列 -->
+        <el-table-column
+          v-if="selectionConfig && selectionConfig.type === 'checkbox'"
+          type="selection"
+          :width="selectionConfig.columnWidth || 48"
+          :fixed="selectionConfig.fixed !== false ? 'left' : false"
+          :selectable="selectionConfig.getCheckboxProps ? selectableFn : undefined"
+        />
+
+        <!-- radio 单选列 -->
+        <el-table-column
+          v-if="selectionConfig && selectionConfig.type === 'radio'"
+          :width="selectionConfig.columnWidth || 48"
+          :fixed="selectionConfig.fixed !== false ? 'left' : false"
+        >
+          <template #default="scope">
+            <el-radio
+              :model-value="isSelected(scope.row)"
+              :value="true"
+              :disabled="getRowDisabled(scope.row)"
+              @change="handleRadioSelect(scope.row)"
+            >
+              &nbsp;
+            </el-radio>
+          </template>
+        </el-table-column>
+
         <template v-for="column in processedColumns" :key="column.dataIndex">
           <!-- 行编辑模式下的操作列 -->
           <el-table-column
@@ -164,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, provide, toRef } from 'vue'
+import { ref, computed, onMounted, provide, toRef, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Edit } from '@element-plus/icons-vue'
 import ProTableToolbar from './Toolbar.vue'
@@ -176,6 +212,7 @@ import { useTableState } from './hooks/useTableState'
 import { useColumnState } from './hooks/useColumnState'
 import { useUrlSync } from './hooks/useUrlSync'
 import { useEditable } from './hooks/useEditable'
+import { useRowSelection } from './hooks/useRowSelection'
 import type { ColumnProps, ProTableProps, TableState } from './types'
 
 const props = withDefaults(defineProps<ProTableProps>(), {
@@ -196,6 +233,11 @@ const emit = defineEmits<{
   (e: 'row-click', row: Record<string, unknown>, event: Event): void
   (e: 'update:params', params: Record<string, unknown>): void
   (e: 'save', params: Record<string, unknown>): void
+  (
+    e: 'selection-change',
+    selectedRowKeys: (string | number)[],
+    selectedRows: Record<string, unknown>[]
+  ): void
 }>()
 
 // 状态管理
@@ -254,6 +296,28 @@ const {
 
 // provide 编辑上下文给子组件
 provide('editableContext', editableContext)
+
+// ---- 行选择功能 ----
+const rowSelectionRef = toRef(props, 'rowSelection')
+
+const {
+  selectedRowKeys,
+  selectedRows,
+  isAllSelected,
+  isIndeterminate,
+  isSelected,
+  getRowDisabled,
+  selectionConfig,
+  toggleRow,
+  toggleAll,
+  clearSelection,
+  syncFromPageSelection,
+  selectRows: selectRowsInternal,
+} = useRowSelection({
+  rowSelection: rowSelectionRef,
+  rowKey: props.rowKey,
+  dataSource,
+})
 
 // 判断单元格是否处于编辑态
 function isCellEditing(row: Record<string, unknown>, column: ColumnProps): boolean {
@@ -411,6 +475,57 @@ function handleRowClick(row: Record<string, unknown>, event: Event) {
   emit('row-click', row, event)
 }
 
+// ---- 行选择事件 ----
+
+// el-table 引用（用于手动恢复选中状态）
+const elTableRef = ref()
+
+// 翻页后恢复 checkbox 选中状态
+watch(dataSource, () => {
+  if (!selectionConfig.value || selectionConfig.value.type !== 'checkbox') return
+  nextTick(() => {
+    if (!elTableRef.value) return
+    for (const row of dataSource.value) {
+      if (isSelected(row)) {
+        elTableRef.value.toggleRowSelection(row, true)
+      }
+    }
+  })
+})
+
+// 行样式：禁用行添加灰底
+function getRowClassName({ row }: { row: Record<string, unknown> }): string {
+  if (selectionConfig.value && getRowDisabled(row)) {
+    return 'pro-table-row--disabled'
+  }
+  return ''
+}
+
+// el-table checkbox selection-change 回调
+function handleSelectionChange(selection: Record<string, unknown>[]) {
+  if (!selectionConfig.value || selectionConfig.value.type !== 'checkbox') return
+
+  syncFromPageSelection(selection, dataSource.value)
+  emit('selection-change', [...selectedRowKeys.value], [...selectedRows.value])
+}
+
+// radio 单选
+function handleRadioSelect(row: Record<string, unknown>) {
+  toggleRow(row)
+  emit('selection-change', [...selectedRowKeys.value], [...selectedRows.value])
+}
+
+// 虚拟表格单行选择
+function handleVirtualSelect(row: Record<string, unknown>) {
+  toggleRow(row)
+  emit('selection-change', [...selectedRowKeys.value], [...selectedRows.value])
+}
+
+// el-table selectable 回调（控制行是否可选）
+function selectableFn(row: Record<string, unknown>): boolean {
+  return !getRowDisabled(row)
+}
+
 // 刷新
 function refresh() {
   fetchData()
@@ -435,6 +550,10 @@ defineExpose({
   startRowEdit,
   saveRowEdit,
   cancelRowEdit,
+  getSelectedRowKeys: () => selectedRowKeys.value,
+  getSelectedRows: () => selectedRows.value,
+  clearSelection,
+  selectRows: selectRowsInternal,
 })
 
 // 初始加载
@@ -476,5 +595,13 @@ onMounted(() => {
 
 .cell-editable:hover .cell-edit-icon {
   opacity: 1;
+}
+</style>
+
+<style>
+/* 禁用行样式不能 scoped，因为 el-table 行类名在子组件内 */
+.pro-table-row--disabled {
+  opacity: 0.5;
+  background-color: var(--el-fill-color-lighter) !important;
 }
 </style>

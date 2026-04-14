@@ -10,6 +10,33 @@
         <table class="virtual-table" :style="{ transform: `translateY(${translateY}px)` }">
           <thead>
             <tr>
+              <!-- 选择列表头 -->
+              <th
+                v-if="rowSelection && rowSelection.type === 'checkbox'"
+                :style="{
+                  width: (rowSelection.columnWidth || 48) + 'px',
+                  minWidth: (rowSelection.columnWidth || 48) + 'px',
+                }"
+                class="virtual-table-header selection-header"
+              >
+                <div class="header-content" style="justify-content: center">
+                  <el-checkbox
+                    :model-value="isAllSelected"
+                    :indeterminate="isIndeterminate"
+                    @change="$emit('select-all')"
+                  />
+                </div>
+              </th>
+              <th
+                v-if="rowSelection && rowSelection.type === 'radio'"
+                :style="{
+                  width: (rowSelection.columnWidth || 48) + 'px',
+                  minWidth: (rowSelection.columnWidth || 48) + 'px',
+                }"
+                class="virtual-table-header selection-header"
+              >
+                <div class="header-content" style="justify-content: center">&nbsp;</div>
+              </th>
               <th
                 v-for="column in columns"
                 :key="column.dataIndex"
@@ -29,6 +56,34 @@
               :style="{ height: rowHeight + 'px' }"
               @click="$emit('row-click', row, $event)"
             >
+              <!-- 选择列单元格 -->
+              <td
+                v-if="rowSelection"
+                :style="{
+                  width: (rowSelection.columnWidth || 48) + 'px',
+                  minWidth: (rowSelection.columnWidth || 48) + 'px',
+                }"
+                class="virtual-table-cell selection-cell"
+              >
+                <div class="cell-content" style="justify-content: center">
+                  <el-checkbox
+                    v-if="rowSelection.type === 'checkbox'"
+                    :model-value="selectedRowKeys.includes(getRowKey(row))"
+                    :disabled="getRowDisabled(row)"
+                    @change="$emit('select', row)"
+                    @click.stop
+                  />
+                  <el-radio
+                    v-if="rowSelection.type === 'radio'"
+                    :model-value="selectedRowKeys.includes(getRowKey(row))"
+                    :disabled="getRowDisabled(row)"
+                    @change="$emit('select', row)"
+                    @click.stop
+                  >
+                    &nbsp;
+                  </el-radio>
+                </div>
+              </td>
               <td
                 v-for="column in columns"
                 :key="column.dataIndex"
@@ -104,7 +159,7 @@ import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
 import ColumnRenderer from './ColumnRenderer.vue'
 import EditCell from './EditCell.vue'
-import type { ColumnProps, EditableContext } from './types'
+import type { ColumnProps, EditableContext, RowSelectionOptions } from './types'
 
 interface Props {
   columns: ColumnProps[]
@@ -113,6 +168,10 @@ interface Props {
   rowKey?: string | ((record: Record<string, unknown>) => string)
   estimatedRowHeight?: number
   buffer?: number
+  rowSelection?: RowSelectionOptions | null
+  selectedRowKeys?: (string | number)[]
+  isAllSelected?: boolean
+  isIndeterminate?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -120,10 +179,16 @@ const props = withDefaults(defineProps<Props>(), {
   rowKey: 'id',
   estimatedRowHeight: 55,
   buffer: 5,
+  rowSelection: null,
+  selectedRowKeys: () => [],
+  isAllSelected: false,
+  isIndeterminate: false,
 })
 
 defineEmits<{
   (e: 'row-click', row: Record<string, unknown>, event: Event): void
+  (e: 'select', row: Record<string, unknown>): void
+  (e: 'select-all'): void
 }>()
 
 // 注入编辑上下文
@@ -190,6 +255,12 @@ function getCellValue(row: Record<string, unknown>, column: ColumnProps): unknow
 function handleCellClick(row: Record<string, unknown>, column: ColumnProps) {
   if (!editableContext) return
   editableContext.startCellEdit(getRowKey(row), column.dataIndex, row)
+}
+
+// 获取行禁用状态
+function getRowDisabled(row: Record<string, unknown>): boolean {
+  if (!props.rowSelection?.getCheckboxProps) return false
+  return props.rowSelection.getCheckboxProps(row).disabled === true
 }
 
 // 处理滚动
@@ -310,6 +381,11 @@ watch(
 
 .cell-editable:hover {
   background-color: var(--el-fill-color-light);
+}
+
+.selection-header,
+.selection-cell {
+  text-align: center;
 }
 
 @keyframes rotate {

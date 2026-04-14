@@ -16,6 +16,7 @@ export { useTableState } from './hooks/useTableState'
 export { useColumnState } from './hooks/useColumnState'
 export { useUrlSync } from './hooks/useUrlSync'
 export { useEditable } from './hooks/useEditable'
+export { useRowSelection } from './hooks/useRowSelection'
 
 // 类型定义
 export type {
@@ -29,6 +30,7 @@ export type {
   EditConfig,
   EditSaveParams,
   EditableContext,
+  RowSelectionOptions,
 } from './types'
 
 // 默认导出

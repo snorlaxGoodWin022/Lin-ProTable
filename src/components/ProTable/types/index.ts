@@ -178,11 +178,24 @@ export interface ProTableProps {
   // 编辑模式
   editMode?: 'cell' | 'row' | 'batch'
 
+  // 行选择配置
+  rowSelection?: RowSelectionOptions | false
+
   // 编辑保存回调 (返回 true 表示成功更新本地数据，false 表示失败回滚)
   onSave?: (params: EditSaveParams) => Promise<boolean>
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 原生 el-table 属性透传
   [key: string]: any
+}
+
+// 行选择配置
+export interface RowSelectionOptions {
+  type: 'checkbox' | 'radio'
+  selectedRowKeys?: (string | number)[]
+  onChange?: (selectedRowKeys: (string | number)[], selectedRows: Record<string, unknown>[]) => void
+  getCheckboxProps?: (record: Record<string, unknown>) => { disabled?: boolean }
+  columnWidth?: number
+  fixed?: boolean
 }
 
 // 导出选项
