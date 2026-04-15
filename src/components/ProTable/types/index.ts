@@ -122,6 +122,7 @@ export interface TableState {
 export interface ColumnState {
   order: string[] // 列顺序
   visible: Record<string, boolean> // 列显隐
+  widths: Record<string, number> // 列宽拖拽后的动态宽度
 }
 
 // 请求参数

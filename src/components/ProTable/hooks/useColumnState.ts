@@ -16,14 +16,24 @@ export function useColumnState(columns: ColumnProps[], initialState?: Partial<Co
   const columnState = ref<ColumnState>({
     order: [...initialOrder],
     visible: { ...initialVisible },
+    widths: {},
     ...initialState,
   })
 
-  // 处理后的列配置
+  // 处理后的列配置（合并动态宽度）
   const processedColumns = computed(() => {
     return columnState.value.order
-      .map((key) => columns.find((col) => col.dataIndex === key))
-      .filter((col) => col && columnState.value.visible[col.dataIndex])
+      .map((key) => {
+        const col = columns.find((c) => c.dataIndex === key)
+        if (!col || !columnState.value.visible[col.dataIndex]) return null
+        // 如果有拖拽后的动态宽度，覆盖原始 width
+        const dynamicWidth = columnState.value.widths[col.dataIndex]
+        if (dynamicWidth !== undefined) {
+          return { ...col, width: dynamicWidth }
+        }
+        return col
+      })
+      .filter((col) => col !== null)
   })
 
   // 更新列状态
@@ -39,10 +49,19 @@ export function useColumnState(columns: ColumnProps[], initialState?: Partial<Co
     }
   }
 
+  // 更新单列宽度（拖拽后调用）
+  const updateColumnWidth = (dataIndex: string, width: number) => {
+    columnState.value.widths = {
+      ...columnState.value.widths,
+      [dataIndex]: width,
+    }
+  }
+
   // 重置列状态
   const resetColumnState = () => {
     columnState.value.order = [...initialOrder]
     columnState.value.visible = { ...initialVisible }
+    columnState.value.widths = {}
   }
 
   // 切换列显隐
@@ -66,6 +85,7 @@ export function useColumnState(columns: ColumnProps[], initialState?: Partial<Co
     columnState,
     processedColumns,
     updateColumnState,
+    updateColumnWidth,
     resetColumnState,
     toggleColumnVisible,
     moveColumn,

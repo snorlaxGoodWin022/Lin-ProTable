@@ -65,10 +65,12 @@
         :data="dataSource"
         :row-key="rowKey"
         :loading="loading"
+        :border="true"
         :row-class-name="getRowClassName"
         @sort-change="handleSortChange"
         @filter-change="handleFilterChange"
         @selection-change="handleSelectionChange"
+        @header-dragend="handleHeaderDragend"
       >
         <!-- checkbox 多选列 -->
         <el-table-column
@@ -151,6 +153,7 @@
             :label="column.title"
             :width="column.width"
             :fixed="column.fixed"
+            :resizable="column.resizable !== false"
             :sortable="column.sorter ? 'custom' : false"
             :column-key="column.dataIndex"
             :filters="column.filters"
@@ -270,7 +273,9 @@ const emit = defineEmits<{
 
 // 状态管理
 const { tableState, setTableState, resetTableState } = useTableState()
-const { columnState, processedColumns, updateColumnState } = useColumnState(props.columns)
+const { columnState, processedColumns, updateColumnState, updateColumnWidth } = useColumnState(
+  props.columns
+)
 
 // URL 同步
 if (props.syncUrl) {
@@ -568,6 +573,13 @@ function handleSelectionChange(selection: Record<string, unknown>[]) {
 
   syncFromPageSelection(selection, dataSource.value)
   emit('selection-change', [...selectedRowKeys.value], [...selectedRows.value])
+}
+
+// 列宽拖拽结束
+function handleHeaderDragend(newWidth: number, _oldWidth: number, column: { property: string }) {
+  if (column.property) {
+    updateColumnWidth(column.property, newWidth)
+  }
 }
 
 // radio 单选
