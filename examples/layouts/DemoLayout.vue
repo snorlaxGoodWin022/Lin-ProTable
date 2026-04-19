@@ -59,6 +59,7 @@ const navItems = [
   { path: '/large-data', icon: '🚀', label: '大数据' },
   { path: '/export', icon: '📥', label: '导出功能' },
   { path: '/column-setting', icon: '⚙️', label: '列设置' },
+  { path: '/crud', icon: '🔧', label: 'CRUD' },
 ]
 </script>
 
