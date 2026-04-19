@@ -12,6 +12,22 @@
     >
       <!-- 透传工具栏插槽 -->
       <template #toolbar-left>
+        <!-- CRUD 按钮 -->
+        <template v-if="crudResult">
+          <el-space>
+            <el-button v-if="crudConfig?.create" type="primary" @click="crudResult?.openCreate()">
+              新增
+            </el-button>
+            <el-button
+              v-if="crudConfig?.batchDelete && selectionConfig"
+              type="danger"
+              :disabled="selectedRowKeys.length === 0"
+              @click="crudResult?.handleBatchDelete()"
+            >
+              批量删除{{ selectedRowKeys.length > 0 ? ` (${selectedRowKeys.length})` : '' }}
+            </el-button>
+          </el-space>
+        </template>
         <!-- batch 模式按钮组 -->
         <template v-if="editMode === 'batch'">
           <el-space>
@@ -140,6 +156,22 @@
                     @click="handleRowEdit(scope.row)"
                     >编辑</el-button
                   >
+                  <el-button
+                    v-if="crudConfig?.update"
+                    size="small"
+                    type="primary"
+                    link
+                    @click="crudResult?.openUpdate(scope.row)"
+                    >编辑</el-button
+                  >
+                  <el-button
+                    v-if="crudConfig?.delete"
+                    size="small"
+                    type="danger"
+                    link
+                    @click="crudResult?.handleDelete(getRowKeyValue(scope.row))"
+                    >删除</el-button
+                  >
                   <slot name="action-extra" :row="scope.row" :index="scope.$index" />
                 </el-space>
               </template>
@@ -212,6 +244,33 @@
             </template>
           </el-table-column>
         </template>
+        <!-- CRUD 自动操作列 -->
+        <el-table-column
+          v-if="crudResult && !columns.some((c) => c.dataIndex === 'action')"
+          label="操作"
+          :width="200"
+          fixed="right"
+        >
+          <template #default="scope">
+            <el-button
+              v-if="crudConfig?.update"
+              size="small"
+              type="primary"
+              link
+              @click="crudResult?.openUpdate(scope.row)"
+              >编辑</el-button
+            >
+            <el-button
+              v-if="crudConfig?.delete"
+              size="small"
+              type="danger"
+              link
+              @click="crudResult?.handleDelete(getRowKeyValue(scope.row))"
+              >删除</el-button
+            >
+            <slot name="action-extra" :row="scope.row" :index="scope.$index" />
+          </template>
+        </el-table-column>
       </el-table>
     </template>
 
@@ -227,6 +286,27 @@
         @current-change="handlePageChange"
       />
     </div>
+    <!-- CRUD Drawer -->
+    <CrudDrawer
+      v-if="crudResult"
+      :visible="crudDrawerVisible"
+      :mode="crudMode"
+      :columns="crudFormColumns"
+      :form-data="crudFormData"
+      :loading="crudFormLoading"
+      :width="crudConfig?.drawerWidth"
+      :get-form-type="crudGetFormType"
+      @update:visible="
+        (val: boolean) => {
+          if (!val) crudResult?.closeDrawer()
+        }
+      "
+      @submit="crudResult?.handleSubmit()"
+    >
+      <template v-for="(_, name) in $slots" :key="name" #[name]="slotData">
+        <slot :name="name" v-bind="slotData || {}" />
+      </template>
+    </CrudDrawer>
   </div>
 </template>
 
@@ -244,6 +324,8 @@ import { useColumnState } from './hooks/useColumnState'
 import { useUrlSync } from './hooks/useUrlSync'
 import { useEditable } from './hooks/useEditable'
 import { useRowSelection } from './hooks/useRowSelection'
+import CrudDrawer from './CrudDrawer.vue'
+import { useCrud } from './hooks/useCrud'
 import type { ColumnProps, ProTableProps, TableState } from './types'
 
 const props = withDefaults(defineProps<ProTableProps>(), {
@@ -257,6 +339,7 @@ const props = withDefaults(defineProps<ProTableProps>(), {
   virtualScroll: () => ({ enabled: false, estimatedRowHeight: 55 }),
   syncUrl: true,
   editMode: undefined,
+  crud: false,
 })
 
 const emit = defineEmits<{
@@ -355,6 +438,30 @@ const {
   rowKey: props.rowKey,
   dataSource,
 })
+
+// ---- CRUD 功能 ----
+const crudConfig = computed(() => {
+  if (!props.crud || props.crud === false) return null
+  return props.crud
+})
+
+const crudResult = crudConfig.value
+  ? useCrud({
+      crud: crudConfig.value!,
+      columns: props.columns,
+      rowKey: props.rowKey,
+      refresh: () => fetchData(),
+      selectedRowKeys,
+      clearSelection,
+    })
+  : null
+
+const crudDrawerVisible = computed(() => crudResult?.drawerVisible.value ?? false)
+const crudMode = computed(() => crudResult?.crudMode.value ?? 'create')
+const crudFormData = computed(() => crudResult?.formData.value ?? {})
+const crudFormLoading = computed(() => crudResult?.formLoading.value ?? false)
+const crudFormColumns = computed(() => crudResult?.formColumns.value ?? [])
+const crudGetFormType = crudResult?.getFormType ?? (() => 'input')
 
 // 判断单元格是否处于编辑态
 function isCellEditing(row: Record<string, unknown>, column: ColumnProps): boolean {
@@ -630,6 +737,10 @@ defineExpose({
   getSelectedRows: () => selectedRows.value,
   clearSelection,
   selectRows: selectRowsInternal,
+  openCreate: crudResult?.openCreate ?? (() => {}),
+  openUpdate: crudResult?.openUpdate ?? (() => {}),
+  handleCrudDelete: crudResult?.handleDelete ?? (() => {}),
+  handleBatchDelete: crudResult?.handleBatchDelete ?? (() => {}),
 })
 
 // 初始加载
