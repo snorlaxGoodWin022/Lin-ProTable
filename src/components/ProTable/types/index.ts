@@ -60,6 +60,13 @@ export interface ColumnProps {
   // 校验规则（编辑时使用）
   rules?: unknown[]
 
+  // 表单相关
+  hideInForm?: boolean
+  formType?: 'input' | 'textarea' | 'number' | 'select' | 'date' | 'datetime' | 'custom'
+  formProps?: Record<string, unknown>
+  defaultValue?: unknown
+  disabledInEdit?: boolean
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 原生 el-table-column 扩展属性
   [key: string]: any
 }
@@ -198,6 +205,9 @@ export interface ProTableProps {
   // 批量编辑保存回调（batch 模式专用）
   onBatchSave?: (params: EditSaveParams) => Promise<boolean>
 
+  // CRUD 配置
+  crud?: CrudConfig | false
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 原生 el-table 属性透传
   [key: string]: any
 }
@@ -210,6 +220,16 @@ export interface RowSelectionOptions {
   getCheckboxProps?: (record: Record<string, unknown>) => { disabled?: boolean }
   columnWidth?: number
   fixed?: boolean
+}
+
+// CRUD 配置
+export interface CrudConfig {
+  create?: (values: Record<string, unknown>) => Promise<boolean>
+  update?: (record: Record<string, unknown>) => Promise<boolean>
+  delete?: (rowId: string | number) => Promise<boolean>
+  batchDelete?: (rowIds: (string | number)[]) => Promise<boolean>
+  formColumns?: ColumnProps[]
+  drawerWidth?: string | number
 }
 
 // 导出选项
