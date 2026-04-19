@@ -63,7 +63,7 @@ export function useCrud(config: UseCrudConfig) {
   function openUpdate(record: Record<string, unknown>) {
     crudMode.value = 'update'
     currentRecord.value = { ...record }
-    formData.value = { ...record }
+    formData.value = JSON.parse(JSON.stringify(record))
     drawerVisible.value = true
   }
 
@@ -73,10 +73,16 @@ export function useCrud(config: UseCrudConfig) {
     try {
       let success: boolean
       if (crudMode.value === 'create') {
-        if (!crud.create) return
+        if (!crud.create) {
+          formLoading.value = false
+          return
+        }
         success = await crud.create(formData.value)
       } else {
-        if (!crud.update) return
+        if (!crud.update) {
+          formLoading.value = false
+          return
+        }
         success = await crud.update(formData.value)
       }
 
