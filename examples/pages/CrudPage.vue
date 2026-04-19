@@ -48,7 +48,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
 import ProTable from '../../src/components/ProTable/ProTable.vue'
 import type {
   ColumnProps,
@@ -153,7 +152,6 @@ const crudConfig: CrudConfig = {
       createdAt: values.createdAt || new Date().toISOString(),
     }
     mockData.value.unshift(newItem)
-    ElMessage.success('新增成功')
     return true
   },
 
@@ -162,7 +160,6 @@ const crudConfig: CrudConfig = {
     const index = mockData.value.findIndex((item) => item.id === values.id)
     if (index !== -1) {
       Object.assign(mockData.value[index], values)
-      ElMessage.success('编辑成功')
       return true
     }
     return false
@@ -173,7 +170,6 @@ const crudConfig: CrudConfig = {
     const index = mockData.value.findIndex((item) => item.id === rowId)
     if (index !== -1) {
       mockData.value.splice(index, 1)
-      ElMessage.success('删除成功')
       return true
     }
     return false
@@ -183,7 +179,6 @@ const crudConfig: CrudConfig = {
     await new Promise((resolve) => setTimeout(resolve, 500))
     const idSet = new Set(rowIds)
     mockData.value = mockData.value.filter((item) => !idSet.has(item.id))
-    ElMessage.success(`成功删除 ${rowIds.length} 条数据`)
     return true
   },
 }
