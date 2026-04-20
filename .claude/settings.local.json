@@ -3,7 +3,19 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(npx playwright:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx vite:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx husky:*)",
+      "Bash(npx prettier:*)",
+      "Bash(node -e \"const plugin = require\\('@typescript-eslint/eslint-plugin'\\); console.log\\(Object.keys\\(plugin\\).join\\(', '\\)\\)\")",
+      "Bash(node -e \"const plugin = require\\('@typescript-eslint/eslint-plugin'\\); console.log\\(plugin.rules['no-unused-vars'] ? 'found' : 'not found'\\); console.log\\(plugin.rules['no-explicit-any'] ? 'found' : 'not found'\\)\")",
+      "Bash(npx eslint:*)",
+      "Bash(node -e \"const pkg = require\\('./package.json'\\); console.log\\(JSON.stringify\\(pkg['lint-staged'], null, 2\\)\\)\")"
     ]
   }
 }
